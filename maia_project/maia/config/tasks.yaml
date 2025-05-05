@@ -41,7 +41,17 @@ final_plan_compilation_task:
     transportation, accommodations, activities, dining) into a cohesive whole. The
     document should be well-structured, visually appealing, and easy to follow, with
     clear sections for each aspect of the trip. Include summary information about how
-    the plan meets key constraints.
+    the plan meets key constraints. The output must be in JSON format with the following structure:
+    {
+      "destination": "Trip destination",
+      "start_date": "YYYY-MM-DD",
+      "end_date": "YYYY-MM-DD",
+      "duration": number,
+      "total_budget": number,
+      "itinerary": { "Day 1": ["activity1", "activity2"], "Day 2": [...] },
+      "accommodations": [{"name": "...", "location": "...", "price": number, "rating": number, "description": "..."}],
+      "transportation": [{"type": "...", "from": "...", "to": "...", "date": "...", "time": "...", "price": number, "details": "..."}]
+    }
   context:
   - area_analysis_task
   - city_selection_task

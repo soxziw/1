@@ -57,8 +57,8 @@ class MAIABase:
 
 
 class MAIA(MAIABase):
-    def process_user_request(self, user_request: str) -> Dict[str, Any]:
-        result = self.crew().kickoff(inputs={"user_request": user_request})
+    def process_request(self, complete_input: Dict[str, Any]) -> Dict[str, Any]:
+        result = self.crew().kickoff(inputs=complete_input)
         return result
 
     def orchestrator(self):

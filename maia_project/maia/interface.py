@@ -91,6 +91,7 @@ class UserInterface:
     def __init__(self):
         """Initialize the user interface."""
         self.user_input = {}
+        self.complete_input = {}
         self.constraints = None
         self.travel_plan = None
 
@@ -129,6 +130,8 @@ class LLMInterface(UserInterface):
         """
         # Define the prompt for the LLM
         prompt = f"""
+        Update based on the following travel information I've collected:
+            {json.dumps(self.user_input, indent=2)}
         Please extract travel planning information from the following user request.
         Format your response as a JSON object with the following fields:
         
@@ -160,130 +163,17 @@ class LLMInterface(UserInterface):
         # Get LLM response
         response = self.llm.generate_response(prompt)
         
-        # Parse the JSON response
-        try:
-            # Extract the JSON part from the response (in case LLM included extra text)
-            json_start = response.find('{')
-            json_end = response.rfind('}') + 1
-            if json_start != -1 and json_end != -1:
-                json_str = response[json_start:json_end]
-                parsed_data = json.loads(json_str)
-            else:
-                # Fallback to regex-based parsing
-                parsed_data = self.parse_user_request_with_regex(user_request)
-        except json.JSONDecodeError:
-            # Fallback to regex-based parsing if JSON parsing fails
-            parsed_data = self.parse_user_request_with_regex(user_request)
+        # Extract the JSON part from the response (in case LLM included extra text)
+        json_start = response.find('{')
+        json_end = response.rfind('}') + 1
+        if json_start != -1 and json_end != -1:
+            json_str = response[json_start:json_end]
+            parsed_data = json.loads(json_str)
         
-        # Store the parsed data
         self.user_input = parsed_data
         return parsed_data
     
-    def parse_user_request_with_regex(self, user_request: str) -> Dict[str, Any]:
-        """
-        Parse the user's request using regex as a fallback method.
-        
-        Args:
-            user_request: The user's travel request as a string
-            
-        Returns:
-            Dictionary containing parsed information
-        """
-        # Extract destination
-        destination_match = re.search(r"to\s+([A-Za-z\s,]+)", user_request)
-        destination = destination_match.group(1).strip() if destination_match else ""
-        
-        # Extract dates or duration
-        date_match = re.search(r"from\s+(\w+\s+\d+)\s+to\s+(\w+\s+\d+)", user_request)
-        duration_match = re.search(r"for\s+(\d+)\s+(days|weeks)", user_request)
-        
-        start_date = ""
-        end_date = ""
-        duration = 0
-        
-        if date_match:
-            start_date_str = date_match.group(1)
-            end_date_str = date_match.group(2)
-            
-            # Convert to proper date format
-            try:
-                start_date = datetime.strptime(
-                    f"{start_date_str} {datetime.now().year}", "%B %d %Y"
-                ).strftime("%Y-%m-%d")
-                
-                end_date = datetime.strptime(
-                    f"{end_date_str} {datetime.now().year}", "%B %d %Y"
-                ).strftime("%Y-%m-%d")
-            except ValueError:
-                # Handle date parsing errors
-                pass
-        elif duration_match:
-            duration_value = int(duration_match.group(1))
-            duration_unit = duration_match.group(2)
-            
-            if duration_unit == "weeks":
-                duration = duration_value * 7
-            else:
-                duration = duration_value
-        
-        # Extract budget
-        budget_match = re.search(r"budget\s+of\s+\\?\\$?(\d+(?:,\d+)*(?:\.\d+)?)", user_request)
-        budget = float(budget_match.group(1).replace(",", "")) if budget_match else 0
-        
-        # Extract origin
-        origin_match = re.search(r"from\s+([A-Za-z\s,]+)\s+to", user_request)
-        origin = origin_match.group(1).strip() if origin_match else ""
-        
-        # Extract preferences
-        preferences = []
-        interest_keywords = [
-            "interested in", "enjoy", "like", "love", "prefer",
-            "museums", "beaches", "mountains", "hiking", "food",
-            "culture", "history", "nature", "shopping", "nightlife"
-        ]
-        
-        for keyword in interest_keywords:
-            if keyword in user_request.lower():
-                if keyword not in ["interested in", "enjoy", "like", "love", "prefer"]:
-                    preferences.append(keyword)
-        
-        # Extract constraints
-        constraints = []
-        constraint_keywords = [
-            "must", "need", "require", "only", "avoid", "wheelchair",
-            "accessible", "allergic", "allergy", "vegetarian", "vegan",
-            "gluten-free", "pet-friendly", "family-friendly", "budget-friendly"
-        ]
-        
-        for keyword in constraint_keywords:
-            if keyword in user_request.lower():
-                constraints.append(keyword)
-        
-        # Create structured data
-        parsed_data = {
-            "destination": destination,
-            "origin": origin,
-            "start_date": start_date,
-            "end_date": end_date,
-            "duration": duration,
-            "total_budget": budget,
-            "preferences": preferences,
-            "constraints": constraints,
-            "raw_request": user_request
-        }
-        
-        return parsed_data
-        
-    def get_required_information(self, parsed_request: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Identify missing required information using LLM and suggest values.
-        
-        Args:
-            parsed_request: Dictionary containing the parsed request
-            
-        Returns:
-            Updated dictionary with all required information
-        """
+    def check_required_information(self) -> bool:
         # Check for required fields
         required_fields = ["destination", "total_budget"]
         required_time_info = ["start_date", "end_date", "duration"]
@@ -301,6 +191,50 @@ class LLMInterface(UserInterface):
             
         # If no missing fields, return as is
         if not missing_fields:
+            return True
+        
+        return False
+        
+    def complete_missing_info_suggestions(self) -> Dict[str, Any]:
+        """
+        Identify missing information and suggest values for all empty fields.
+            
+        Returns:
+            Updated dictionary with suggested values for all empty fields
+        """
+        parsed_data = self.user_input
+        
+        # Define all possible fields that could be in a complete travel request
+        all_fields = [
+            "destination", "origin", "start_date", "end_date", "duration", 
+            "total_budget", "accommodation_types", "cuisine_preferences",
+            "activity_preferences", "accessibility_requirements", "avoid_list",
+            "must_see_list", "travel_pace", "transportation_preferences",
+            "num_travelers", "special_occasions", "language_requirements",
+            "custom_constraints"
+        ]
+        
+        # Check for empty or missing fields
+        missing_fields = []
+        for field in all_fields:
+            if not parsed_request.get(field):
+                missing_fields.append(field)
+        
+        
+        # Check for time information
+        has_time_info = any(parsed_request.get(field) for field in required_time_info)
+        if not has_time_info:
+            missing_fields.append("travel_dates")
+            
+                
+        # Check for time information
+        has_time_info = any(parsed_request.get(field) for field in required_time_info)
+        if not has_time_info:
+            missing_fields.append("travel_dates")
+            
+        # If no missing fields, return as is
+        if not missing_fields:
+            self.complete_input = parsed_request
             return parsed_request
         
         # Use LLM to suggest values for missing fields
@@ -308,11 +242,31 @@ class LLMInterface(UserInterface):
         Based on the following partial travel request information:
         {json.dumps(parsed_request, indent=2)}
         
-        The following required information is missing or incomplete:
+        Please suggest reasonable default values for ALL the following missing fields:
         {", ".join(missing_fields)}
         
-        Please suggest reasonable default values for the missing information.
         Consider any contextual clues in the provided information to make your suggestions as relevant as possible.
+        
+        For reference, here are all the fields that could be included in a complete travel request:
+        - destination: The destination(s) the user wants to visit
+        - origin: Where the user is traveling from (if mentioned)
+        - start_date: The start date of the trip (in YYYY-MM-DD format)
+        - end_date: The end date of the trip (in YYYY-MM-DD format)
+        - duration: The number of days of the trip
+        - total_budget: The total budget for the trip (as a number without currency symbol)
+        - accommodation_types: A list of preferred accommodation types 
+        - cuisine_preferences: A list of food or cuisine preferences
+        - activity_preferences: A list of preferred activities or interests
+        - accessibility_requirements: Any accessibility needs
+        - avoid_list: A list of things the user wants to avoid
+        - must_see_list: A list of must-see attractions or experiences
+        - travel_pace: The preferred pace of travel (relaxed, moderate, fast)
+        - transportation_preferences: Preferred modes of transportation
+        - num_travelers: The number of people traveling
+        - special_occasions: Any special occasions being celebrated
+        - language_requirements: Any language preferences or requirements
+        - custom_constraints: Any other specific constraints or requirements
+        
         Format your response as a JSON object with ONLY the missing fields and their suggested values.
         """
         
@@ -330,21 +284,147 @@ class LLMInterface(UserInterface):
             # Update the parsed request with suggested values
             updated_request = parsed_request.copy()
             updated_request.update(suggested_values)
-            
-            # Handle travel dates specifically
-            if "travel_dates" in missing_fields and "travel_dates" in suggested_values:
-                dates = suggested_values["travel_dates"]
-                if isinstance(dates, dict):
-                    if "start_date" in dates:
-                        updated_request["start_date"] = dates["start_date"]
-                    if "end_date" in dates:
-                        updated_request["end_date"] = dates["end_date"]
-                    if "duration" in dates:
-                        updated_request["duration"] = dates["duration"]
         
-        self.user_input = updated_request
+        self.complete_input = updated_request
         return updated_request
         
+    def greet_user(self) -> str:
+        """
+        Generate a personalized greeting message for the user using LLM.
+        
+        Returns:
+            Greeting message string
+        """
+        # Use LLM to generate a more personalized greeting
+        prompt = """
+        Create a friendly and engaging greeting message for a travel planning assistant called MAIA 
+        (Multi-Agent Itinerary Assistant). The message should:
+        
+        1. Introduce MAIA and explain its purpose (creating personalized travel itineraries)
+        2. Mention that MAIA uses advanced AI to understand user preferences and constraints
+        3. Ask users to provide details about their travel plans including:
+           - Destination interests
+           - Travel dates and duration
+           - Budget considerations
+           - Accommodation preferences
+           - Activity interests
+           - Dining preferences
+           - Transportation preferences
+           - Any special requirements or constraints
+        4. Encourage users to provide as much detail as possible for better results
+        5. Be welcoming, conversational, and enthusiastic about helping plan their trip
+        
+        Keep the greeting concise but informative. Format it with appropriate spacing and bullet points.
+        """
+        
+        try:
+            # Get LLM response
+            response = self.llm.generate_response(prompt)
+            
+            # If we got a valid response, use it
+            if response and len(response.strip()) > 100:  # Minimum length check
+                return response
+        except Exception as e:
+            print(f"Error generating greeting with LLM: {e}")
+        
+        # Fallback to default greeting
+        return (
+            "Welcome to MAIA (Multi-Agent Itinerary Assistant)!\n\n"
+            "I'm here to help you plan your perfect trip by understanding your travel "
+            "preferences and constraints. I'll create a detailed itinerary that strictly "
+            "adheres to your requirements.\n\n"
+            "To get started, please tell me about your travel plans. Include information "
+            "about:\n"
+            "- Where you want to go\n"
+            "- When you want to travel and for how long\n"
+            "- Your budget\n"
+            "- Your interests and preferences\n"
+            "- Any specific constraints or requirements\n\n"
+            "The more details you provide, the better I can tailor your travel plan!"
+        )
+    
+    def ask_for_updates(self) -> str:
+        """
+        Ask the user for additional information or updates to their travel plan.
+        
+        Returns:
+            A prompt asking for additional information or updates
+        """
+        # Determine what information might still be useful to collect
+        missing_or_incomplete = []
+        
+        # Check if we have user input to analyze
+        if self.user_input:
+            # Check for important missing fields
+            if not self.user_input.get('activity_preferences'):
+                missing_or_incomplete.append("activities or interests")
+            if not self.user_input.get('accommodation_types'):
+                missing_or_incomplete.append("accommodation preferences")
+            if not self.user_input.get('cuisine_preferences'):
+                missing_or_incomplete.append("food or dining preferences")
+            if not self.user_input.get('travel_pace'):
+                missing_or_incomplete.append("preferred travel pace (relaxed, moderate, or fast-paced)")
+        
+        # Create a prompt for the LLM based on what we know
+        prompt = ""
+        if self.complete_input:
+            # We have complete input, so ask for refinements
+            prompt = f"""
+            Based on the following travel information I've collected:
+            {json.dumps(self.complete_input, indent=2)}
+            
+            Create a friendly message asking the user if they want to:
+            1. Add any additional details to their travel plan
+            2. Modify any of the current details
+            3. Confirm the information is correct
+            
+            If there are specific areas that seem incomplete (like {', '.join(missing_or_incomplete) if missing_or_incomplete else 'any preferences or special requirements'}), 
+            gently prompt for those details specifically.
+            
+            Keep the message conversational, helpful, and concise.
+            """
+        else:
+            # We don't have complete input yet, so ask for basic information
+            prompt = """
+            Create a friendly message asking the user to provide more details about their travel plans.
+            Suggest they might want to include information about:
+            - Activities they enjoy or specific attractions they want to see
+            - Accommodation preferences (luxury, budget, etc.)
+            - Dining preferences or dietary restrictions
+            - Transportation preferences
+            - Any special requirements or constraints
+            
+            Keep the message conversational, helpful, and concise.
+            """
+        
+        if self.complete_input:
+            self.user_input = self.complete_input
+            
+        try:
+            # Get LLM response
+            response = self.llm.generate_response(prompt)
+            
+            # If we got a valid response, use it
+            if response and len(response.strip()) > 50:  # Minimum length check
+                return response
+        except Exception as e:
+            print(f"Error generating follow-up prompt with LLM: {e}")
+        
+        # Fallback to default prompt
+        if missing_or_incomplete:
+            return (
+                f"Thanks for that information! To create an even better travel plan, "
+                f"could you tell me more about your {', '.join(missing_or_incomplete)}?\n\n"
+                f"Or if you have any other details to add or modify, please let me know."
+            )
+        else:
+            return (
+                "Thank you for the information! Is there anything else you'd like to add or modify "
+                "about your travel plans? Any specific preferences or requirements I should know about?\n\n"
+                "The more details you provide, the better I can tailor your travel experience."
+            )
+    
+    
     def extract_constraints_with_llm(self, parsed_request: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract detailed travel constraints using LLM.
@@ -499,119 +579,6 @@ class LLMInterface(UserInterface):
             print(f"Error creating constraints with LLM: {e}")
             return super().create_constraints(parsed_request)
     
-    def greet_user(self) -> str:
-        """
-        Generate a personalized greeting message for the user using LLM.
-        
-        Returns:
-            Greeting message string
-        """
-        # Use LLM to generate a more personalized greeting
-        prompt = """
-        Create a friendly and engaging greeting message for a travel planning assistant called MAIA 
-        (Multi-Agent Itinerary Assistant). The message should:
-        
-        1. Introduce MAIA and explain its purpose (creating personalized travel itineraries)
-        2. Mention that MAIA uses advanced AI to understand user preferences and constraints
-        3. Ask users to provide details about their travel plans including:
-           - Destination interests
-           - Travel dates and duration
-           - Budget considerations
-           - Accommodation preferences
-           - Activity interests
-           - Dining preferences
-           - Transportation preferences
-           - Any special requirements or constraints
-        4. Encourage users to provide as much detail as possible for better results
-        5. Be welcoming, conversational, and enthusiastic about helping plan their trip
-        
-        Keep the greeting concise but informative. Format it with appropriate spacing and bullet points.
-        """
-        
-        try:
-            # Get LLM response
-            response = self.llm.generate_response(prompt)
-            
-            # If we got a valid response, use it
-            if response and len(response.strip()) > 100:  # Minimum length check
-                return response
-        except Exception as e:
-            print(f"Error generating greeting with LLM: {e}")
-        
-        # Fallback to default greeting
-        return (
-            "Welcome to MAIA (Multi-Agent Itinerary Assistant)!\n\n"
-            "I'm here to help you plan your perfect trip by understanding your travel "
-            "preferences and constraints. I'll create a detailed itinerary that strictly "
-            "adheres to your requirements.\n\n"
-            "To get started, please tell me about your travel plans. Include information "
-            "about:\n"
-            "- Where you want to go\n"
-            "- When you want to travel and for how long\n"
-            "- Your budget\n"
-            "- Your interests and preferences\n"
-            "- Any specific constraints or requirements\n\n"
-            "The more details you provide, the better I can tailor your travel plan!"
-        )
-    
-    def get_required_information(self, parsed_request: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Identify missing required information and prompt the user.
-        
-        Args:
-            parsed_request: Dictionary containing the parsed request
-            
-        Returns:
-            Updated dictionary with all required information
-        """
-        required_fields = ["destination", "total_budget"]
-        required_time_info = ["start_date", "end_date", "duration"]
-        
-        # Check for required fields
-        missing_fields = []
-        for field in required_fields:
-            if not parsed_request.get(field):
-                missing_fields.append(field)
-        
-        # Check for time information
-        has_time_info = any(parsed_request.get(field) for field in required_time_info)
-        if not has_time_info:
-            missing_fields.append("travel_dates")
-        
-        if not missing_fields:
-            return parsed_request
-        
-        # This is where we would prompt the user for missing information
-        # For now, just add placeholder values
-        updated_request = parsed_request.copy()
-        
-        if "destination" in missing_fields:
-            updated_request["destination"] = "Paris, France"
-        
-        if "total_budget" in missing_fields:
-            updated_request["total_budget"] = 3000.0
-        
-        if "travel_dates" in missing_fields:
-            updated_request["start_date"] = "2023-07-01"
-            updated_request["end_date"] = "2023-07-10"
-        
-        self.user_input = updated_request
-        return updated_request
-    
-    def create_constraints(self, parsed_request: Dict[str, Any]) -> Constraints:
-        """
-        Create a constraints object from the parsed request.
-        
-        Args:
-            parsed_request: Dictionary containing the parsed request
-            
-        Returns:
-            Constraints object
-        """
-        constraints = parse_user_input_to_constraints(parsed_request)
-        self.constraints = constraints
-        return constraints
-    
     def format_travel_plan(self, plan_data: Dict[str, Any]) -> str:
         """
         Format the travel plan data into a user-friendly display.
@@ -693,8 +660,24 @@ class LLMInterface(UserInterface):
             f.write(formatted_plan)
         
         return os.path.abspath(filename)
-    
+        
     def get_feedback(self, travel_plan: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get feedback from the user on the travel plan.
+        
+        Args:
+            travel_plan: Dictionary containing the travel plan
+            
+        Returns:
+            Dictionary containing the user's feedback
+        """
+        # This is where we would collect feedback from the user
+        # For now, just return a placeholder
+        return {
+            "satisfaction": 5,  # 1-5 scale
+            "comments": "Great plan!",
+            "suggestions": []
+        }    def get_feedback(self, travel_plan: Dict[str, Any]) -> Dict[str, Any]:
         """
         Get feedback from the user on the travel plan.
         
