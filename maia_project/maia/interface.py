@@ -320,28 +320,27 @@ class LLMInterface(UserInterface):
         response = self.llm.generate_response(prompt)
         
         # Parse the JSON response
-        try:
-            # Extract the JSON part from the response
-            json_start = response.find('{')
-            json_end = response.rfind('}') + 1
-            if json_start != -1 and json_end != -1:
-                json_str = response[json_start:json_end]
-                suggested_values = json.loads(json_str)
-                
-                # Update the parsed request with suggested values
-                updated_request = parsed_request.copy()
-                updated_request.update(suggested_values)
-                
-                # Handle travel dates specifically
-                if "travel_dates" in missing_fields and "travel_dates" in suggested_values:
-                    dates = suggested_values["travel_dates"]
-                    if isinstance(dates, dict):
-                        if "start_date" in dates:
-                            updated_request["start_date"] = dates["start_date"]
-                        if "end_date" in dates:
-                            updated_request["end_date"] = dates["end_date"]
-                        if "duration" in dates:
-                            updated_request["duration"] = dates["duration"]
+        # Extract the JSON part from the response
+        json_start = response.find('{')
+        json_end = response.rfind('}') + 1
+        if json_start != -1 and json_end != -1:
+            json_str = response[json_start:json_end]
+            suggested_values = json.loads(json_str)
+            
+            # Update the parsed request with suggested values
+            updated_request = parsed_request.copy()
+            updated_request.update(suggested_values)
+            
+            # Handle travel dates specifically
+            if "travel_dates" in missing_fields and "travel_dates" in suggested_values:
+                dates = suggested_values["travel_dates"]
+                if isinstance(dates, dict):
+                    if "start_date" in dates:
+                        updated_request["start_date"] = dates["start_date"]
+                    if "end_date" in dates:
+                        updated_request["end_date"] = dates["end_date"]
+                    if "duration" in dates:
+                        updated_request["duration"] = dates["duration"]
         
         self.user_input = updated_request
         return updated_request
