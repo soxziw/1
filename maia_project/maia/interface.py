@@ -25,9 +25,58 @@ from typing import Protocol, runtime_checkable
 class LLMProvider(Protocol):
     """Protocol defining the interface for an LLM provider."""
     
-    def generate_response(self, prompt: str) -> str:
-        """Generate a response from the LLM based on the prompt."""
-        ...
+    def generate_response(self, prompt: str, model: str = "gpt-4o") -> str:
+        """
+        Generate a response using the OpenAI GPT-4o model.
+        
+        Args:
+            prompt: The prompt to send to the model
+            model: The model to use, defaults to "gpt-4o"
+            
+        Returns:
+            The generated response as a string
+        """
+        pass
+
+
+class OpenAIProvider(LLMProvider):
+    """Implementation of LLMProvider using OpenAI's API."""
+    
+    def __init__(self, api_key: Optional[str] = None):
+        """
+        Initialize the OpenAI provider.
+        
+        Args:
+            api_key: OpenAI API key. If None, will try to use OPENAI_API_KEY from environment
+        """
+        import openai
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        if not self.api_key:
+            raise ValueError("OpenAI API key is required")
+        self.client = openai.OpenAI(api_key=self.api_key)
+    
+    def generate_response(self, prompt: str, model: str = "gpt-4o") -> str:
+        """
+        Generate a response using the OpenAI API.
+        
+        Args:
+            prompt: The prompt to send to the model
+            model: The model to use, defaults to "gpt-4o"
+            
+        Returns:
+            The generated response as a string
+        """
+        try:
+            response = self.client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=2000
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"Error generating response from OpenAI: {e}")
+            return "I'm sorry, I encountered an error while processing your request."
 
 
 class UserInterface:
@@ -54,16 +103,20 @@ class LLMInterface(UserInterface):
     for improved natural language understanding and generation.
     """
     
-    def __init__(self, llm_provider: LLMProvider):
+    def __init__(self, llm_provider: Optional[LLMProvider] = None):
         """
         Initialize the LLM interface.
         
         Args:
-            llm_provider: An object that implements the LLMProvider protocol
+            llm_provider: An object that implements the LLMProvider protocol.
+                          If None, creates a default OpenAIProvider.
         """
         super().__init__()
-        self.llm = llm_provider
-        
+        if llm_provider is None:
+            self.llm = OpenAIProvider()
+        else:
+            self.llm = llm_provider
+
     def parse_user_request(self, user_request: str) -> Dict[str, Any]:
         """
         Parse the user's natural language request into structured data using LLM.
