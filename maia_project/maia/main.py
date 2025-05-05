@@ -15,7 +15,7 @@ import warnings
 from dotenv import load_dotenv
 
 from maia.agents import MAIA
-from maia.interface import UserInterface
+from maia.interface import LLMInterface
 from maia.constraints import validate_constraints
 
 
@@ -45,7 +45,7 @@ def interactive_mode():
     setup_environment()
     
     # Initialize the user interface
-    ui = UserInterface()
+    ui = LLMInterface()
     
     # Greet the user
     print(ui.greet_user())
@@ -72,7 +72,7 @@ def process_request(user_request: str) -> Dict[str, Any]:
     setup_environment()
     
     # Initialize the user interface and MAIA
-    ui = UserInterface()
+    ui = LLMInterface()
     maia_system = MAIA()
     
     print("Analyzing your request...")
@@ -134,7 +134,7 @@ def run():
         result = process_request(args.request)
         
         # Save the result to the specified output file
-        ui = UserInterface()
+        ui = LLMInterface()
         travel_plan_path = ui.save_travel_plan(result, args.output)
         
         print(f"Travel plan saved to: {travel_plan_path}")
