@@ -10,12 +10,12 @@ import argparse
 import json
 import os
 import sys
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union, Type
 import warnings
 from dotenv import load_dotenv
 
 from maia.agents import MAIA
-from maia.interface import LLMInterface
+from maia.interface import UserInterface, LLMInterface
 from maia.constraints import validate_constraints
 
 
@@ -39,13 +39,40 @@ def setup_environment():
         sys.exit(1)
 
 
-def interactive_mode():
-    """Run MAIA in interactive mode."""
+def get_interface(use_llm: bool = True) -> Union[UserInterface, LLMInterface]:
+    """
+    Get the appropriate interface based on configuration.
+    
+    Args:
+        use_llm: Whether to use the LLM-based interface
+        
+    Returns:
+        An interface instance
+    """
+    if use_llm:
+        try:
+            # First check for a configured LLM provider
+            return LLMInterface()
+        except Exception as e:
+            print(f"Warning: Failed to initialize LLM interface: {e}")
+            print("Falling back to standard interface.")
+            return UserInterface()
+    else:
+        return UserInterface()
+     
+
+def interactive_mode(use_llm: bool = True):
+    """
+    Run MAIA in interactive mode.
+    
+    Args:
+        use_llm: Whether to use the LLM-based interface
+    """
     # Set up the environment
     setup_environment()
     
     # Initialize the user interface
-    ui = LLMInterface()
+    ui = get_interface(use_llm)
     
     # Greet the user
     print(ui.greet_user())
@@ -55,15 +82,16 @@ def interactive_mode():
     user_request = input("Tell me about your travel plans: ")
     
     # Process the request
-    process_request(user_request)
+    process_request(user_request, use_llm)
 
 
-def process_request(user_request: str) -> Dict[str, Any]:
+def process_request(user_request: str, use_llm: bool = True) -> Dict[str, Any]:
     """
     Process a user request and generate a travel plan.
     
     Args:
         user_request: The user's travel request as a string
+        use_llm: Whether to use the LLM-based interface
         
     Returns:
         Dictionary containing the travel plan
@@ -72,7 +100,7 @@ def process_request(user_request: str) -> Dict[str, Any]:
     setup_environment()
     
     # Initialize the user interface and MAIA
-    ui = LLMInterface()
+    ui = get_interface(use_llm)
     maia_system = MAIA()
     
     print("Analyzing your request...")
@@ -126,21 +154,25 @@ def run():
     parser.add_argument("--output", type=str, default="travel_plan.md",
                         help="Output file path for the travel plan")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    parser.add_argument("--use-llm", action="store_true", default=True,
+                        help="Use LLM for improved natural language understanding (default: True)")
+    parser.add_argument("--no-llm", action="store_false", dest="use_llm",
+                        help="Disable LLM-based interface")
     
     args = parser.parse_args()
     
     if args.request:
         # Non-interactive mode with request provided as argument
-        result = process_request(args.request)
+        result = process_request(args.request, args.use_llm)
         
         # Save the result to the specified output file
-        ui = LLMInterface()
+        ui = get_interface(args.use_llm)
         travel_plan_path = ui.save_travel_plan(result, args.output)
         
         print(f"Travel plan saved to: {travel_plan_path}")
     else:
         # Interactive mode
-        interactive_mode()
+        interactive_mode(args.use_llm)
 
 
 if __name__ == "__main__":

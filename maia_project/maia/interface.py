@@ -170,13 +170,108 @@ class LLMInterface(UserInterface):
                 parsed_data = json.loads(json_str)
             else:
                 # Fallback to regex-based parsing
-                parsed_data = super().parse_user_request(user_request)
+                parsed_data = self.parse_user_request_with_regex(user_request)
         except json.JSONDecodeError:
             # Fallback to regex-based parsing if JSON parsing fails
-            parsed_data = super().parse_user_request(user_request)
+            parsed_data = self.parse_user_request_with_regex(user_request)
         
         # Store the parsed data
         self.user_input = parsed_data
+        return parsed_data
+    
+    def parse_user_request_with_regex(self, user_request: str) -> Dict[str, Any]:
+        """
+        Parse the user's request using regex as a fallback method.
+        
+        Args:
+            user_request: The user's travel request as a string
+            
+        Returns:
+            Dictionary containing parsed information
+        """
+        # Extract destination
+        destination_match = re.search(r"to\s+([A-Za-z\s,]+)", user_request)
+        destination = destination_match.group(1).strip() if destination_match else ""
+        
+        # Extract dates or duration
+        date_match = re.search(r"from\s+(\w+\s+\d+)\s+to\s+(\w+\s+\d+)", user_request)
+        duration_match = re.search(r"for\s+(\d+)\s+(days|weeks)", user_request)
+        
+        start_date = ""
+        end_date = ""
+        duration = 0
+        
+        if date_match:
+            start_date_str = date_match.group(1)
+            end_date_str = date_match.group(2)
+            
+            # Convert to proper date format
+            try:
+                start_date = datetime.strptime(
+                    f"{start_date_str} {datetime.now().year}", "%B %d %Y"
+                ).strftime("%Y-%m-%d")
+                
+                end_date = datetime.strptime(
+                    f"{end_date_str} {datetime.now().year}", "%B %d %Y"
+                ).strftime("%Y-%m-%d")
+            except ValueError:
+                # Handle date parsing errors
+                pass
+        elif duration_match:
+            duration_value = int(duration_match.group(1))
+            duration_unit = duration_match.group(2)
+            
+            if duration_unit == "weeks":
+                duration = duration_value * 7
+            else:
+                duration = duration_value
+        
+        # Extract budget
+        budget_match = re.search(r"budget\s+of\s+\\?\\$?(\d+(?:,\d+)*(?:\.\d+)?)", user_request)
+        budget = float(budget_match.group(1).replace(",", "")) if budget_match else 0
+        
+        # Extract origin
+        origin_match = re.search(r"from\s+([A-Za-z\s,]+)\s+to", user_request)
+        origin = origin_match.group(1).strip() if origin_match else ""
+        
+        # Extract preferences
+        preferences = []
+        interest_keywords = [
+            "interested in", "enjoy", "like", "love", "prefer",
+            "museums", "beaches", "mountains", "hiking", "food",
+            "culture", "history", "nature", "shopping", "nightlife"
+        ]
+        
+        for keyword in interest_keywords:
+            if keyword in user_request.lower():
+                if keyword not in ["interested in", "enjoy", "like", "love", "prefer"]:
+                    preferences.append(keyword)
+        
+        # Extract constraints
+        constraints = []
+        constraint_keywords = [
+            "must", "need", "require", "only", "avoid", "wheelchair",
+            "accessible", "allergic", "allergy", "vegetarian", "vegan",
+            "gluten-free", "pet-friendly", "family-friendly", "budget-friendly"
+        ]
+        
+        for keyword in constraint_keywords:
+            if keyword in user_request.lower():
+                constraints.append(keyword)
+        
+        # Create structured data
+        parsed_data = {
+            "destination": destination,
+            "origin": origin,
+            "start_date": start_date,
+            "end_date": end_date,
+            "duration": duration,
+            "total_budget": budget,
+            "preferences": preferences,
+            "constraints": constraints,
+            "raw_request": user_request
+        }
+        
         return parsed_data
         
     def get_required_information(self, parsed_request: Dict[str, Any]) -> Dict[str, Any]:
@@ -247,12 +342,6 @@ class LLMInterface(UserInterface):
                             updated_request["end_date"] = dates["end_date"]
                         if "duration" in dates:
                             updated_request["duration"] = dates["duration"]
-            else:
-                # Fallback to the base implementation
-                updated_request = super().get_required_information(parsed_request)
-        except json.JSONDecodeError:
-            # Fallback to the base implementation
-            updated_request = super().get_required_information(parsed_request)
         
         self.user_input = updated_request
         return updated_request
@@ -465,105 +554,6 @@ class LLMInterface(UserInterface):
             "- Any specific constraints or requirements\n\n"
             "The more details you provide, the better I can tailor your travel plan!"
         )
-    
-    def parse_user_request(self, user_request: str) -> Dict[str, Any]:
-        """
-        Parse the user's natural language request into structured data.
-        
-        Args:
-            user_request: The user's travel request as a string
-            
-        Returns:
-            Dictionary containing parsed information
-        """
-        # This is where we would use LLM-based extraction to parse the request
-        # For now, we'll use a simple regex-based approach for demonstration
-        
-        # Extract destination
-        destination_match = re.search(r"to\s+([A-Za-z\s,]+)", user_request)
-        destination = destination_match.group(1).strip() if destination_match else ""
-        
-        # Extract dates or duration
-        date_match = re.search(r"from\s+(\w+\s+\d+)\s+to\s+(\w+\s+\d+)", user_request)
-        duration_match = re.search(r"for\s+(\d+)\s+(days|weeks)", user_request)
-        
-        start_date = ""
-        end_date = ""
-        duration = 0
-        
-        if date_match:
-            start_date_str = date_match.group(1)
-            end_date_str = date_match.group(2)
-            
-            # Convert to proper date format
-            try:
-                start_date = datetime.strptime(
-                    f"{start_date_str} {datetime.now().year}", "%B %d %Y"
-                ).strftime("%Y-%m-%d")
-                
-                end_date = datetime.strptime(
-                    f"{end_date_str} {datetime.now().year}", "%B %d %Y"
-                ).strftime("%Y-%m-%d")
-            except ValueError:
-                # Handle date parsing errors
-                pass
-        elif duration_match:
-            duration_value = int(duration_match.group(1))
-            duration_unit = duration_match.group(2)
-            
-            if duration_unit == "weeks":
-                duration = duration_value * 7
-            else:
-                duration = duration_value
-        
-        # Extract budget
-        budget_match = re.search(r"budget\s+of\s+\\?\\$?(\d+(?:,\d+)*(?:\.\d+)?)", user_request)
-        budget = float(budget_match.group(1).replace(",", "")) if budget_match else 0
-        
-        # Extract origin
-        origin_match = re.search(r"from\s+([A-Za-z\s,]+)\s+to", user_request)
-        origin = origin_match.group(1).strip() if origin_match else ""
-        
-        # Extract preferences
-        preferences = []
-        interest_keywords = [
-            "interested in", "enjoy", "like", "love", "prefer",
-            "museums", "beaches", "mountains", "hiking", "food",
-            "culture", "history", "nature", "shopping", "nightlife"
-        ]
-        
-        for keyword in interest_keywords:
-            if keyword in user_request.lower():
-                if keyword not in ["interested in", "enjoy", "like", "love", "prefer"]:
-                    preferences.append(keyword)
-        
-        # Extract constraints
-        constraints = []
-        constraint_keywords = [
-            "must", "need", "require", "only", "avoid", "wheelchair",
-            "accessible", "allergic", "allergy", "vegetarian", "vegan",
-            "gluten-free", "pet-friendly", "family-friendly", "budget-friendly"
-        ]
-        
-        for keyword in constraint_keywords:
-            if keyword in user_request.lower():
-                constraints.append(keyword)
-        
-        # Create structured data
-        parsed_data = {
-            "destination": destination,
-            "origin": origin,
-            "start_date": start_date,
-            "end_date": end_date,
-            "duration": duration,
-            "total_budget": budget,
-            "preferences": preferences,
-            "constraints": constraints,
-            "raw_request": user_request
-        }
-        
-        self.user_input = parsed_data
-        return parsed_data
     
     def get_required_information(self, parsed_request: Dict[str, Any]) -> Dict[str, Any]:
         """
