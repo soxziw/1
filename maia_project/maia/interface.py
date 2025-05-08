@@ -660,37 +660,3 @@ class LLMInterface(UserInterface):
             f.write(formatted_plan)
         
         return os.path.abspath(filename)
-        
-    def get_feedback(self, travel_plan: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Get feedback from the user on the travel plan.
-        
-        Args:
-            travel_plan: Dictionary containing the travel plan
-            
-        Returns:
-            Dictionary containing the user's feedback
-        """
-        # This is where we would collect feedback from the user
-        # For now, just return a placeholder
-        return {
-            "satisfaction": 5,  # 1-5 scale
-            "comments": "Great plan!",
-            "suggestions": []
-        }    def get_feedback(self, travel_plan: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Get feedback from the user on the travel plan.
-        
-        Args:
-            travel_plan: Dictionary containing the travel plan
-            
-        Returns:
-            Dictionary containing the user's feedback
-        """
-        # This is where we would collect feedback from the user
-        # For now, just return a placeholder
-        return {
-            "satisfaction": 5,  # 1-5 scale
-            "comments": "Great plan!",
-            "suggestions": []
-        }

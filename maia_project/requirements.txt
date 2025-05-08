@@ -1,0 +1,3 @@
+git+https://github.com/joaomdmoura/crewAI.git
+crewai_tools
+google-search-results
