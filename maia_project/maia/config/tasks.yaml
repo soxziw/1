@@ -1,5 +1,3 @@
----
-# Orchestrator Tasks
 request_analysis_task:
   agent: orchestrator
   description: >
@@ -29,6 +27,158 @@ plan_coordination_task:
   context:
   - request_analysis_task
 
+area_analysis_task:
+  agent: area_analysis_specialist
+  description: >
+    Analyze the destination region(s) specified in the user's request, considering the
+    overall time frame, seasonality, regional events, and peak/off-peak patterns.
+    Recommend optimal travel dates within the user's specified time constraints.
+    Identify key sub-regions or areas that should be included in the itinerary based
+    on user preferences and constraints.
+  expected_output: >
+    A detailed analysis of the destination region(s) with recommended travel dates
+    and justification. Include information about climate conditions, seasonal
+    considerations, regional events during the travel period, and tourist patterns.
+    Provide a list of recommended sub-regions or areas to include in the itinerary
+    with rationale based on user preferences.
+  context:
+  - plan_coordination_task
+
+city_selection_task:
+  agent: city_selection_specialist
+  description: >
+    Based on the area analysis and user constraints, select specific cities to include
+    in the itinerary. Determine the optimal number of days to allocate to each city,
+    ensuring the total matches the user's overall trip duration. Consider factors such
+    as travel distance between cities, density of relevant attractions, and alignment
+    with user preferences.
+  expected_output: >
+    A structured list of selected cities with the number of days allocated to each and
+    justification for both the selection and duration. Include a brief overview of what
+    makes each city suitable for this specific itinerary and how it aligns with user
+    preferences and constraints.
+  context:
+  - plan_coordination_task
+  - area_analysis_task
+
+intercity_transit_task:
+  agent: intercity_transit_specialist
+  description: >
+    Plan transportation between the selected cities, identifying the most suitable
+    mode of transport (flight, train, bus, car) for each segment. Consider factors
+    such as cost, duration, convenience, scenic value, and user preferences. Provide
+    specific options with timing that aligns with the overall itinerary structure.
+  expected_output: >
+    Detailed transportation plans for each intercity segment, including recommended
+    mode, specific options (flight numbers, train services, etc.), departure/arrival
+    times, duration, approximate cost, and booking information. Include alternative
+    options where relevant and explain why the recommended option best meets the
+    user's constraints.
+  context:
+  - plan_coordination_task
+  - area_analysis_task
+  - city_selection_task
+
+
+accommodation_search_task:
+  agent: accommodation_search_specialist
+  description: >
+    For each city in the itinerary, find suitable accommodation options that match
+    user preferences, budget constraints, and practical considerations. Consider
+    factors such as location relative to planned activities, property type, amenities,
+    guest ratings, and value for money.
+  expected_output: >
+    For each city, provide 2-3 recommended accommodation options with detailed
+    information including name, location, property type, room types, price per night,
+    total stay cost, key amenities, guest rating, and proximity to attractions.
+    Explain why each option is suitable for the user based on their constraints and
+    preferences. Highlight the best overall choice.
+  context:
+  - plan_coordination_task
+  - city_selection_task
+
+activities_planning_task:
+  agent: activities_planning_specialist
+  description: >
+    For each city in the itinerary, develop a daily activities plan that incorporates
+    attractions and experiences aligned with user interests and preferences. Consider
+    opening hours, admission requirements, geographic proximity, typical visit
+    duration, and crowd patterns. Ensure activities are logically sequenced and fit
+    within the time available each day.
+  expected_output: >
+    For each city, provide a detailed day-by-day activities plan with specific
+    attractions, experiences, and points of interest. Include timing, location
+    information, admission details, and brief descriptions. Explain how the selected
+    activities align with user preferences and constraints. Ensure the plan is
+    geographically efficient and realistically timed.
+  context:
+  - plan_coordination_task
+  - city_selection_task
+  - accommodation_search_task
+
+dining_recommendations_task:
+  agent: dining_recommendations_specialist
+  description: >
+    For each city in the itinerary, recommend dining options that showcase local
+    cuisine and align with user preferences and budget constraints. Consider factors
+    such as proximity to planned activities, meal timing, reservation requirements,
+    special dietary needs, and dining atmosphere.
+  expected_output: >
+    For each city, provide a curated list of dining recommendations for each day,
+    including breakfast, lunch, dinner, and snack options where appropriate. Include
+    restaurant names, cuisines, price ranges, signature dishes, location relative to
+    activities, and reservation guidance. Explain why each recommendation suits the
+    user's preferences and constraints.
+  context:
+  - plan_coordination_task
+  - city_selection_task
+  - activities_planning_task
+
+local_transport_task:
+  agent: local_transport_specialist
+  description: >
+    For each city in the itinerary, plan efficient local transportation between
+    accommodations, activities, and dining venues. Recommend the most suitable
+    transportation modes (walking, public transit, taxi, rideshare) for different
+    segments, considering factors such as distance, cost, convenience, and local
+    conditions.
+  expected_output: >
+    For each city, provide a comprehensive local transportation plan that details
+    how to move between all points of interest in the itinerary. Include recommended
+    modes, specific routes, estimated costs, travel durations, and practical tips.
+    Where relevant, include information about passes or tickets that offer good value
+    for the planned activities.
+  context:
+  - plan_coordination_task
+  - city_selection_task
+  - accommodation_search_task
+  - activities_planning_task
+  - dining_recommendations_task
+
+constraint_verification_task:
+  agent: constraint_verification_specialist
+  description: >
+    Thoroughly verify that all aspects of the travel plan adhere to the user's
+    specified constraints. Check time constraints (travel dates, durations, timing),
+    budget constraints (total cost, allocation across categories), and preference
+    constraints (accommodation type, activity interests, dining preferences). Identify
+    any violations or potential issues that need to be addressed.
+  expected_output: >
+    A detailed verification report that systematically analyzes the travel plan against
+    all user constraints. The report should clearly identify any constraint violations,
+    potential issues, or inconsistencies, organized by constraint category and plan
+    component. For each issue, provide a specific recommendation for how it should be
+    addressed. If no issues are found, confirm compliance with all constraints.
+  context:
+  - plan_coordination_task
+  - area_analysis_task
+  - city_selection_task
+  - intercity_transit_task
+  - accommodation_search_task
+  - activities_planning_task
+  - dining_recommendations_task
+  - local_transport_task
+
 final_plan_compilation_task:
   agent: orchestrator
   description: >
@@ -53,6 +203,7 @@ final_plan_compilation_task:
       "transportation": [{"type": "...", "from": "...", "to": "...", "date": "...", "time": "...", "price": number, "details": "..."}]
     }
   context:
+  - plan_coordination_task
   - area_analysis_task
   - city_selection_task
   - intercity_transit_task
@@ -60,158 +211,4 @@ final_plan_compilation_task:
   - activities_planning_task
   - dining_recommendations_task
   - local_transport_task
-
-# Area Layer Tasks
-area_analysis_task:
-  agent: area_specialist
-  description: >
-    Analyze the destination region(s) specified in the user's request, considering the
-    overall time frame, seasonality, regional events, and peak/off-peak patterns.
-    Recommend optimal travel dates within the user's specified time constraints.
-    Identify key sub-regions or areas that should be included in the itinerary based
-    on user preferences and constraints.
-  expected_output: >
-    A detailed analysis of the destination region(s) with recommended travel dates
-    and justification. Include information about climate conditions, seasonal
-    considerations, regional events during the travel period, and tourist patterns.
-    Provide a list of recommended sub-regions or areas to include in the itinerary
-    with rationale based on user preferences.
-  context:
-  - request_analysis_task
-
-# City Layer Tasks
-city_selection_task:
-  agent: city_selection_specialist
-  description: >
-    Based on the area analysis and user constraints, select specific cities to include
-    in the itinerary. Determine the optimal number of days to allocate to each city,
-    ensuring the total matches the user's overall trip duration. Consider factors such
-    as travel distance between cities, density of relevant attractions, and alignment
-    with user preferences.
-  expected_output: >
-    A structured list of selected cities with the number of days allocated to each and
-    justification for both the selection and duration. Include a brief overview of what
-    makes each city suitable for this specific itinerary and how it aligns with user
-    preferences and constraints.
-  context:
-  - request_analysis_task
-  - area_analysis_task
-
-intercity_transit_task:
-  agent: intercity_transit_specialist
-  description: >
-    Plan transportation between the selected cities, identifying the most suitable
-    mode of transport (flight, train, bus, car) for each segment. Consider factors
-    such as cost, duration, convenience, scenic value, and user preferences. Provide
-    specific options with timing that aligns with the overall itinerary structure.
-  expected_output: >
-    Detailed transportation plans for each intercity segment, including recommended
-    mode, specific options (flight numbers, train services, etc.), departure/arrival
-    times, duration, approximate cost, and booking information. Include alternative
-    options where relevant and explain why the recommended option best meets the
-    user's constraints.
-  context:
-  - request_analysis_task
-  - area_analysis_task
-  - city_selection_task
-
-# Within-City Layer Tasks
-accommodation_search_task:
-  agent: accommodation_specialist
-  description: >
-    For each city in the itinerary, find suitable accommodation options that match
-    user preferences, budget constraints, and practical considerations. Consider
-    factors such as location relative to planned activities, property type, amenities,
-    guest ratings, and value for money.
-  expected_output: >
-    For each city, provide 2-3 recommended accommodation options with detailed
-    information including name, location, property type, room types, price per night,
-    total stay cost, key amenities, guest rating, and proximity to attractions.
-    Explain why each option is suitable for the user based on their constraints and
-    preferences. Highlight the best overall choice.
-  context:
-  - request_analysis_task
-  - city_selection_task
-
-activities_planning_task:
-  agent: activities_specialist
-  description: >
-    For each city in the itinerary, develop a daily activities plan that incorporates
-    attractions and experiences aligned with user interests and preferences. Consider
-    opening hours, admission requirements, geographic proximity, typical visit
-    duration, and crowd patterns. Ensure activities are logically sequenced and fit
-    within the time available each day.
-  expected_output: >
-    For each city, provide a detailed day-by-day activities plan with specific
-    attractions, experiences, and points of interest. Include timing, location
-    information, admission details, and brief descriptions. Explain how the selected
-    activities align with user preferences and constraints. Ensure the plan is
-    geographically efficient and realistically timed.
-  context:
-  - request_analysis_task
-  - city_selection_task
-  - accommodation_search_task
-
-dining_recommendations_task:
-  agent: dining_specialist
-  description: >
-    For each city in the itinerary, recommend dining options that showcase local
-    cuisine and align with user preferences and budget constraints. Consider factors
-    such as proximity to planned activities, meal timing, reservation requirements,
-    special dietary needs, and dining atmosphere.
-  expected_output: >
-    For each city, provide a curated list of dining recommendations for each day,
-    including breakfast, lunch, dinner, and snack options where appropriate. Include
-    restaurant names, cuisines, price ranges, signature dishes, location relative to
-    activities, and reservation guidance. Explain why each recommendation suits the
-    user's preferences and constraints.
-  context:
-  - request_analysis_task
-  - city_selection_task
-  - activities_planning_task
-
-local_transport_task:
-  agent: local_transport_specialist
-  description: >
-    For each city in the itinerary, plan efficient local transportation between
-    accommodations, activities, and dining venues. Recommend the most suitable
-    transportation modes (walking, public transit, taxi, rideshare) for different
-    segments, considering factors such as distance, cost, convenience, and local
-    conditions.
-  expected_output: >
-    For each city, provide a comprehensive local transportation plan that details
-    how to move between all points of interest in the itinerary. Include recommended
-    modes, specific routes, estimated costs, travel durations, and practical tips.
-    Where relevant, include information about passes or tickets that offer good value
-    for the planned activities.
-  context:
-  - request_analysis_task
-  - city_selection_task
-  - accommodation_search_task
-  - activities_planning_task
-  - dining_recommendations_task
-
-# Verification Tasks
-constraint_verification_task:
-  agent: verification_specialist
-  description: >
-    Thoroughly verify that all aspects of the travel plan adhere to the user's
-    specified constraints. Check time constraints (travel dates, durations, timing),
-    budget constraints (total cost, allocation across categories), and preference
-    constraints (accommodation type, activity interests, dining preferences). Identify
-    any violations or potential issues that need to be addressed.
-  expected_output: >
-    A detailed verification report that systematically analyzes the travel plan against
-    all user constraints. The report should clearly identify any constraint violations,
-    potential issues, or inconsistencies, organized by constraint category and plan
-    component. For each issue, provide a specific recommendation for how it should be
-    addressed. If no issues are found, confirm compliance with all constraints.
-  context:
-  - request_analysis_task
-  - area_analysis_task
-  - city_selection_task
-  - intercity_transit_task
-  - accommodation_search_task
-  - activities_planning_task
-  - dining_recommendations_task
-  - local_transport_task
+  - constraint_verification_task

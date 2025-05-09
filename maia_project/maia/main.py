@@ -50,7 +50,7 @@ def interactive_mode(ui: LLMInterface, maia_system: MAIA):
     
     # Process the request
     while 1:
-        _ = process_request(user_request)
+        _ = process_request(ui, maia_system, user_request)
         user_request = input(ui.ask_for_updates() + "\n" + "-" * 80 + "\n" + "Provide more info or type 'done' to finish: ")
         if user_request.lower() == 'done':
             break
@@ -71,12 +71,15 @@ def process_request(ui: LLMInterface, maia_system: MAIA, user_request: str) -> D
     
     # Parse the user request
     parsed_request = ui.parse_user_request(user_request)
+    print("Parsed request:", parsed_request)
     
     if not ui.check_required_information():
         return {}
     
     # Get any missing required information
+    # complete_request = parsed_request
     complete_request = ui.complete_missing_info_suggestions()
+    print("Complete request:", complete_request)
     
     # # Create constraints
     # constraints = ui.create_constraints(complete_request)
@@ -104,6 +107,7 @@ def process_request(ui: LLMInterface, maia_system: MAIA, user_request: str) -> D
     
     # Process the request and generate a travel plan
     result = maia_system.process_request(complete_request)
+    print("Result:", result)
     
     # Format and save the travel plan
     travel_plan_path = ui.save_travel_plan(result)

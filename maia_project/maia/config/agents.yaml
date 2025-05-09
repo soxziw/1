@@ -1,5 +1,3 @@
----
-# Orchestrator Agent
 orchestrator:
   role: Travel Planning Orchestrator
   goal: >
@@ -13,8 +11,7 @@ orchestrator:
     while strictly enforcing user constraints. You're known for your ability to
     prioritize user preferences and requirements above all else.
 
-# Area Layer Agent
-area_specialist:
+area_analysis_specialist:
   role: Destination & Timeline Specialist
   goal: >
     Analyze high-level destination and timeline constraints, considering
@@ -28,7 +25,6 @@ area_specialist:
     You're adept at aligning travel plans with the specific constraints and
     preferences of travelers, ensuring their journey begins with a solid foundation.
 
-# City Layer Agents
 city_selection_specialist:
   role: City Selection & Duration Specialist
   goal: >
@@ -55,8 +51,7 @@ intercity_transit_specialist:
     comfort, scenic value, and environmental impact when making suggestions. Your
     expertise ensures travelers move between destinations efficiently and comfortably.
 
-# Within-City Layer Agents
-accommodation_specialist:
+accommodation_search_specialist:
   role: Accommodation Specialist
   goal: >
     Find accommodations that perfectly match location preferences, budget constraints,
@@ -69,7 +64,7 @@ accommodation_specialist:
     proximity to attractions, neighborhood safety, available facilities, and guest
     reviews to make informed recommendations that enhance the overall travel experience.
 
-activities_specialist:
+activities_planning_specialist:
   role: Sites & Activities Specialist
   goal: >
     Curate engaging activities and attractions that align with traveler interests,
@@ -83,7 +78,7 @@ activities_specialist:
     Your recommendations aim to provide authentic and memorable experiences while
     respecting practical constraints.
 
-dining_specialist:
+dining_recommendations_specialist:
   role: Dining & Culinary Specialist
   goal: >
     Recommend dining experiences that showcase local cuisine while meeting dietary
@@ -111,8 +106,7 @@ local_transport_specialist:
     expertise helps travelers move around destinations efficiently, saving time and
     energy for more meaningful experiences.
 
-# Verification Agent
-verification_specialist:
+constraint_verification_specialist:
   role: Constraint Verification Specialist
   goal: >
     Rigorously verify that all aspects of the travel plan adhere to specified

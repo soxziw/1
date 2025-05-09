@@ -181,11 +181,11 @@ class LLMInterface(UserInterface):
         # Check for empty or missing fields
         missing_fields = []
         for field in required_fields:
-            if not parsed_request.get(field):
+            if not self.user_input.get(field):
                 missing_fields.append(field)
         
         # Check for time information
-        has_time_info = any(parsed_request.get(field) for field in required_time_info)
+        has_time_info = any(self.user_input.get(field) for field in required_time_info)
         if not has_time_info:
             missing_fields.append("travel_dates")
             
@@ -217,30 +217,18 @@ class LLMInterface(UserInterface):
         # Check for empty or missing fields
         missing_fields = []
         for field in all_fields:
-            if not parsed_request.get(field):
+            if not self.user_input.get(field):
                 missing_fields.append(field)
         
-        
-        # Check for time information
-        has_time_info = any(parsed_request.get(field) for field in required_time_info)
-        if not has_time_info:
-            missing_fields.append("travel_dates")
-            
-                
-        # Check for time information
-        has_time_info = any(parsed_request.get(field) for field in required_time_info)
-        if not has_time_info:
-            missing_fields.append("travel_dates")
-            
         # If no missing fields, return as is
         if not missing_fields:
-            self.complete_input = parsed_request
-            return parsed_request
+            self.complete_input = self.user_input
+            return self.user_input
         
         # Use LLM to suggest values for missing fields
         prompt = f"""
         Based on the following partial travel request information:
-        {json.dumps(parsed_request, indent=2)}
+        {json.dumps(self.user_input, indent=2)}
         
         Please suggest reasonable default values for ALL the following missing fields:
         {", ".join(missing_fields)}
@@ -282,7 +270,7 @@ class LLMInterface(UserInterface):
             suggested_values = json.loads(json_str)
             
             # Update the parsed request with suggested values
-            updated_request = parsed_request.copy()
+            updated_request = self.user_input.copy()
             updated_request.update(suggested_values)
         
         self.complete_input = updated_request
@@ -355,7 +343,25 @@ class LLMInterface(UserInterface):
         
         # Check if we have user input to analyze
         if self.user_input:
-            # Check for important missing fields
+            # Check for required fields
+            required_fields = ["destination", "total_budget"]
+            required_time_info = ["start_date", "end_date", "duration"]
+            
+            # Check for empty or missing fields
+            missing_fields = []
+            for field in required_fields:
+                if not self.user_input.get(field):
+                    missing_fields.append(field)
+            
+            # Check for time information
+            has_time_info = any(self.user_input.get(field) for field in required_time_info)
+            if not has_time_info:
+                missing_fields.append("travel_dates")
+            
+            # Add required fields to missing_or_incomplete
+            missing_or_incomplete.extend(missing_fields)
+            
+            # Check for other useful but non-required fields
             if not self.user_input.get('activity_preferences'):
                 missing_or_incomplete.append("activities or interests")
             if not self.user_input.get('accommodation_types'):
