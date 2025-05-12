@@ -1,12 +1,12 @@
 request_analysis_task:
   agent: orchestrator
   description: >
-    Analyze the user's travel request in detail. Extract explicit constraints related to
+    Analyze the {travel_request} in detail. Extract explicit constraints related to
     time (dates, duration), budget, and preferences. Identify implicit constraints and
     requirements from the user's language and context. Organize these into structured
     constraint categories that can be passed to specialist agents.
   expected_output: >
-    A comprehensive analysis of the user's request with clearly organized constraint
+    A comprehensive analysis of the {travel_request} with clearly organized constraint
     categories (time, budget, preferences) in JSON format. The output should include
     both explicitly stated constraints and reasonable implicit constraints derived
     from the request context.

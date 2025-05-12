@@ -58,14 +58,13 @@ class MAIABase:
 @CrewBase
 class MAIA(MAIABase):
     def process_request(self, complete_input: Dict[str, Any]) -> Dict[str, Any]:
-        result = self.crew().kickoff(inputs=complete_input)
+        result = self.crew().kickoff(inputs={"travel_request": complete_input})
         return result
 
     @agent
     def orchestrator(self) -> Agent:
         return Agent(
-            config=self.agents_config["orchestrator"],
-            tools=[ConstraintValidationTool(), SerperDevTool()]
+            config=self.agents_config["orchestrator"]
         )
 
     @task
