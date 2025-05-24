@@ -67,7 +67,7 @@ def process_request(ui: LLMInterface, maia_system: MAIA, user_request: str) -> D
         Dictionary containing the travel plan
     """
     
-    print("Analyzing your request...")
+    print("Analyzing your request:", user_request)
     
     # Parse the user request
     parsed_request = ui.parse_user_request(user_request)
@@ -97,23 +97,46 @@ def process_request(ui: LLMInterface, maia_system: MAIA, user_request: str) -> D
     # # Update MAIA's constraints
     # maia_system.update_constraints(constraints.dict())
     
-    # Activate all layers for comprehensive planning
-    maia_system.activate_layer("area")
-    maia_system.activate_layer("city")
-    maia_system.activate_layer("within_city")
-    maia_system.activate_layer("verification")
+    # Define layers in order of processing
+    layers = ["area", "city", "within_city"]
+    result = {}
     
     print("Creating your travel plan... This may take a few minutes.")
     
-    # Process the request and generate a travel plan
-    result = maia_system.process_request(complete_request)
+    # Process each layer sequentially
+    for layer in layers:
+        print(f"Processing {layer} layer...")
+        maia_system.activate_layer(layer)
+        # Pass the combined result from previous layers with complete_request
+        layer_result = maia_system.process_request(complete_request, result, layer)
+        
+        # Verify the layer results
+        verification_result = maia_system.verify_plan(layer_result, complete_request)
+        print(f"Verification result for {layer} layer:", verification_result)
+        
+        # If verification failed, return current layer results
+        if not verification_result.get("constraints_satisfied", False):
+            print(f"Verification failed for {layer} layer. Stopping processing.")
+            result.update(layer_result)
+            maia_system.deactivate_layer(layer)
+            return result
+        
+        # Update the overall result with new information from this layer
+        result.update(layer_result)
+        maia_system.deactivate_layer(layer)
+        print(f"Completed {layer} layer processing")
+    
     print("Result:", result)
     
-    # Format and save the travel plan
-    travel_plan_path = ui.save_travel_plan(result)
+    # Final verification of the complete travel plan
+    verification_result = maia_system.verify_plan(result, complete_request)
+    print("Final verification result:", verification_result)
     
-    print(f"\nYour travel plan has been created and saved to: {travel_plan_path}")
-    print("You can open this file to view your complete itinerary.")
+    # # Format and save the travel plan
+    # travel_plan_path = ui.save_travel_plan(result)
+    
+    # print(f"\nYour travel plan has been created and saved to: {travel_plan_path}")
+    # print("You can open this file to view your complete itinerary.")
     
     return result
 

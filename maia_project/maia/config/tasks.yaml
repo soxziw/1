@@ -18,12 +18,12 @@ plan_coordination_task:
     activated for this specific travel request. Create a plan for agent coordination,
     specifying the sequence of agent activations and how outputs from one agent will
     feed into others. Ensure all aspects of the request will be addressed while
-    avoiding unnecessary steps.
+    avoiding unnecessary steps. Consider any existing results from previous rounds of processing {result}.
   expected_output: >
     A detailed coordination plan specifying which agents will be activated, in what
     order, and how their outputs will flow between them. The plan should include
     decision points for handling contingencies and specific constraint verification
-    checkpoints.
+    checkpoints. The plan should incorporate and build upon any existing results {result}.
   context:
   - request_analysis_task
 
@@ -79,7 +79,6 @@ intercity_transit_task:
   - area_analysis_task
   - city_selection_task
 
-
 accommodation_search_task:
   agent: accommodation_search_specialist
   description: >
@@ -116,19 +115,24 @@ activities_planning_task:
   - city_selection_task
   - accommodation_search_task
 
-dining_recommendations_task:
-  agent: dining_recommendations_specialist
+restaurant_recommendations_task:
+  agent: restaurant_recommendations_specialist
   description: >
-    For each city in the itinerary, recommend dining options that showcase local
-    cuisine and align with user preferences and budget constraints. Consider factors
-    such as proximity to planned activities, meal timing, reservation requirements,
-    special dietary needs, and dining atmosphere.
+    For each day in the itinerary, recommend restaurant options that showcase local
+    cuisine and align with user preferences and budget constraints. Ensure that
+    lunch and dinner options are provided for every day, while breakfast can be
+    optional. Consider factors such as proximity to planned activities, meal timing,
+    reservation requirements, special dietary needs, and restaurant atmosphere.
+    Each recommended restaurant must be unique across the entire itinerary - no
+    restaurant should appear more than once.
   expected_output: >
-    For each city, provide a curated list of dining recommendations for each day,
-    including breakfast, lunch, dinner, and snack options where appropriate. Include
-    restaurant names, cuisines, price ranges, signature dishes, location relative to
-    activities, and reservation guidance. Explain why each recommendation suits the
-    user's preferences and constraints.
+    For each day in the itinerary, provide a curated list of restaurant recommendations,
+    with mandatory lunch and dinner options and optional breakfast suggestions.
+    Include restaurant names, cuisines, price ranges, signature dishes, location
+    relative to activities, and reservation guidance. Explain why each recommendation
+    suits the user's preferences and constraints. Ensure no day in the itinerary is
+    missing lunch or dinner plans. Each restaurant in the recommendations must be unique
+    - the same restaurant should never be recommended twice across the entire itinerary.
   context:
   - plan_coordination_task
   - city_selection_task
@@ -138,7 +142,7 @@ local_transport_task:
   agent: local_transport_specialist
   description: >
     For each city in the itinerary, plan efficient local transportation between
-    accommodations, activities, and dining venues. Recommend the most suitable
+    accommodations, activities, and restaurants. Recommend the most suitable
     transportation modes (walking, public transit, taxi, rideshare) for different
     segments, considering factors such as distance, cost, convenience, and local
     conditions.
@@ -153,62 +157,65 @@ local_transport_task:
   - city_selection_task
   - accommodation_search_task
   - activities_planning_task
-  - dining_recommendations_task
+  - restaurant_recommendations_task
 
-constraint_verification_task:
-  agent: constraint_verification_specialist
-  description: >
-    Thoroughly verify that all aspects of the travel plan adhere to the user's
-    specified constraints. Check time constraints (travel dates, durations, timing),
-    budget constraints (total cost, allocation across categories), and preference
-    constraints (accommodation type, activity interests, dining preferences). Identify
-    any violations or potential issues that need to be addressed.
-  expected_output: >
-    A detailed verification report that systematically analyzes the travel plan against
-    all user constraints. The report should clearly identify any constraint violations,
-    potential issues, or inconsistencies, organized by constraint category and plan
-    component. For each issue, provide a specific recommendation for how it should be
-    addressed. If no issues are found, confirm compliance with all constraints.
-  context:
-  - plan_coordination_task
-  - area_analysis_task
-  - city_selection_task
-  - intercity_transit_task
-  - accommodation_search_task
-  - activities_planning_task
-  - dining_recommendations_task
-  - local_transport_task
-
-final_plan_compilation_task:
+area_results_merge_task:
   agent: orchestrator
   description: >
-    Compile the outputs from all specialist agents into a cohesive, user-friendly
-    travel plan. Resolve any inconsistencies or conflicts between different plan
-    segments. Ensure the final plan strictly adheres to all user constraints and
-    presents information in a clear, logically organized format.
+    Merge the results from the area analysis layer specialists into a cohesive
+    area-level travel plan. Ensure all area analysis data is properly formatted
+    and integrated into the TravelPlanAreaLayer structure.
   expected_output: >
-    A comprehensive travel plan document that integrates all components (destinations,
-    transportation, accommodations, activities, dining) into a cohesive whole. The
-    document should be well-structured, visually appealing, and easy to follow, with
-    clear sections for each aspect of the trip. Include summary information about how
-    the plan meets key constraints. The output must be in JSON format with the following structure:
-    {
-      "destination": "Trip destination",
-      "start_date": "YYYY-MM-DD",
-      "end_date": "YYYY-MM-DD",
-      "duration": number,
-      "total_budget": number,
-      "itinerary": { "Day 1": ["activity1", "activity2"], "Day 2": [...] },
-      "accommodations": [{"name": "...", "location": "...", "price": number, "rating": number, "description": "..."}],
-      "transportation": [{"type": "...", "from": "...", "to": "...", "date": "...", "time": "...", "price": number, "details": "..."}]
-    }
+    A comprehensive area-level travel plan in TravelPlanAreaLayer format that includes
+    all area analysis information. The output should contain well-structured data about
+    the broader destination area including regional information, climate data, and general
+    travel considerations.
   context:
   - plan_coordination_task
   - area_analysis_task
+
+city_results_merge_task:
+  agent: orchestrator
+  description: >
+    Merge the results from the city selection and intercity transit specialists
+    into a cohesive city-level travel plan. Ensure all city analysis and intercity
+    transit data is properly formatted and integrated into the TravelPlanCityLayer structure.
+  expected_output: >
+    A comprehensive city-level travel plan in TravelPlanCityLayer format that includes
+    all city selection and intercity transit information. The output should contain
+    well-structured data about the selected cities and transportation options between them.
+  context:
+  - plan_coordination_task
   - city_selection_task
   - intercity_transit_task
+
+within_city_results_merge_task:
+  agent: orchestrator
+  description: >
+    Merge the results from the within-city specialists (accommodation, activities, restaurant,
+    and local transportation) into a cohesive within-city level travel plan. Ensure all
+    data is properly formatted and integrated into the TravelPlanWithinCityLayer structure.
+  expected_output: >
+    A comprehensive within-city level travel plan in TravelPlanWithinCityLayer format that
+    includes all accommodation, activities, restaurant, and local transportation information.
+    The output should contain well-structured data about accommodations, daily activities,
+    restaurant options, and local transportation recommendations.
+  context:
+  - plan_coordination_task
   - accommodation_search_task
   - activities_planning_task
-  - dining_recommendations_task
+  - restaurant_recommendations_task
   - local_transport_task
-  - constraint_verification_task
+
+plan_verification_task:
+  agent: plan_verification_specialist
+  description: >
+    Verify whether the proposed travel plan {travel_plan} meets all the user's specified constraints and requirements {travel_request}.
+    Use Z3 solver (in SMT-LIB 2 format strictly) to mathematically verify hard constraints (time constraints like dates and duration,
+    budget constraints) are strictly satisfied. Then analyze soft constraints (accommodation preferences,
+    activity preferences, restaurant preferences, transportation preferences, and any special requirements) to evaluate the degree
+    to which they are met. For hard constraints, create logical formulas that must be true for the plan to
+    be valid, ensuring dates are within range, budget limits are respected, and durations are correct.
+    Identify any violations or inconsistencies between the plan and the constraints with precise reasoning.
+  expected_output: >
+    A detailed verification report that evaluates whether the travel plan JSON satisfies all constraints

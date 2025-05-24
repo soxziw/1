@@ -296,7 +296,7 @@ class LLMInterface(UserInterface):
            - Budget considerations
            - Accommodation preferences
            - Activity interests
-           - Dining preferences
+           - Restaurant preferences
            - Transportation preferences
            - Any special requirements or constraints
         4. Encourage users to provide as much detail as possible for better results
@@ -367,7 +367,7 @@ class LLMInterface(UserInterface):
             if not self.user_input.get('accommodation_types'):
                 missing_or_incomplete.append("accommodation preferences")
             if not self.user_input.get('cuisine_preferences'):
-                missing_or_incomplete.append("food or dining preferences")
+                missing_or_incomplete.append("food or restaurant preferences")
             if not self.user_input.get('travel_pace'):
                 missing_or_incomplete.append("preferred travel pace (relaxed, moderate, or fast-paced)")
         
@@ -396,7 +396,7 @@ class LLMInterface(UserInterface):
             Suggest they might want to include information about:
             - Activities they enjoy or specific attractions they want to see
             - Accommodation preferences (luxury, budget, etc.)
-            - Dining preferences or dietary restrictions
+            - Restaurant preferences or dietary restrictions
             - Transportation preferences
             - Any special requirements or constraints
             
