@@ -218,6 +218,13 @@ class ConstraintAnalysis(BaseModel):
     issues: List[str]
     recommendations: List[str]
 
+class LengthOfFieldVerification(BaseModel):
+    """Pydantic model for length of field verification."""
+    satisfied: bool
+    length_of_field_list: int
+    issues: List[str]
+    recommendations: List[str]
+
 class MustSeeListVerification(BaseModel):
     """Pydantic model for must-see list verification."""
     satisfied: bool
@@ -231,12 +238,41 @@ class AvoidListVerification(BaseModel):
     violated_items: List[str]
     recommendations: List[str]
 
-class DetailedAnalysis(BaseModel):
-    """Pydantic model for detailed verification analysis."""
+class AreaDetailedAnalysis(BaseModel):
+    """Pydantic model for area detailed verification analysis."""
     from_city_constraints: ConstraintAnalysis
     destination_constraints: ConstraintAnalysis
     time_constraints: ConstraintAnalysis
     budget_constraints: ConstraintAnalysis
+    length_of_area_constraints: LengthOfFieldVerification
+    area_constraints: ConstraintAnalysis
+    
+class CityDetailedAnalysis(BaseModel):
+    """Pydantic model for city detailed verification analysis."""
+    from_city_constraints: ConstraintAnalysis
+    destination_constraints: ConstraintAnalysis
+    time_constraints: ConstraintAnalysis
+    budget_constraints: ConstraintAnalysis
+    length_of_city_constraints: LengthOfFieldVerification
+    length_of_city_constraints: LengthOfFieldVerification
+    length_of_intercity_transit_constraints: LengthOfFieldVerification
+    area_constraints: ConstraintAnalysis
+    city_selection_constraints: ConstraintAnalysis
+    intercity_transit_constraints: ConstraintAnalysis
+    
+class WithinCityDetailedAnalysis(BaseModel):
+    """Pydantic model for within city detailed verification analysis."""
+    from_city_constraints: ConstraintAnalysis
+    destination_constraints: ConstraintAnalysis
+    time_constraints: ConstraintAnalysis
+    budget_constraints: ConstraintAnalysis
+    length_of_area_constraints: LengthOfFieldVerification
+    length_of_city_constraints: LengthOfFieldVerification
+    length_of_intercity_transit_constraints: LengthOfFieldVerification
+    length_of_accommodation_constraints: LengthOfFieldVerification
+    length_of_activity_constraints: LengthOfFieldVerification
+    length_of_restaurant_constraints: LengthOfFieldVerification
+    length_of_local_transportation_constraints: LengthOfFieldVerification
     area_constraints: ConstraintAnalysis
     city_selection_constraints: ConstraintAnalysis
     intercity_transit_constraints: ConstraintAnalysis
@@ -248,11 +284,23 @@ class DetailedAnalysis(BaseModel):
     must_see_list_verification: MustSeeListVerification
     avoid_list_verification: AvoidListVerification
 
-class VerificationResult(BaseModel):
+class AreaVerificationResult(BaseModel):
     """Pydantic model for the plan verification result."""
     constraints_satisfied: bool
     verification_summary: str
-    detailed_analysis: DetailedAnalysis
+    detailed_analysis: AreaDetailedAnalysis
+
+class CityVerificationResult(BaseModel):
+    """Pydantic model for the plan verification result."""
+    constraints_satisfied: bool
+    verification_summary: str
+    detailed_analysis: CityDetailedAnalysis
+
+class WithinCityVerificationResult(BaseModel):
+    """Pydantic model for the plan verification result."""
+    constraints_satisfied: bool
+    verification_summary: str
+    detailed_analysis: WithinCityDetailedAnalysis
 
 class MAIABase:
     def __init__(self):
@@ -359,8 +407,13 @@ class MAIA(MAIABase):
             print(f"Current result: {current_result}")
         return current_result
     
-    def verify_plan(self, travel_plan: Dict[str, Any], travel_request: Dict[str, Any]) -> Dict[str, Any]:
-        result = self.crew_verify().kickoff(inputs={"travel_plan": travel_plan, "travel_request": travel_request})
+    def verify_plan(self, travel_plan: Dict[str, Any], travel_request: Dict[str, Any], layer: str) -> Dict[str, Any]:
+        component_name = {
+            "area": ["area"],
+            "city": ["cities", "intercity transit"],
+            "within_city": ["accommodations", "activities", "restaurants", "local transportation"]
+        }
+        result = self.crew_verify(layer).kickoff(inputs={"travel_plan": travel_plan, "travel_request": travel_request, "component_name": component_name[layer]})
         return result.to_dict()
 
     @agent
@@ -496,8 +549,17 @@ class MAIA(MAIABase):
         )
 
     @task
-    def plan_verification_task(self) -> Task:
-        return Task(config=self.tasks_config["plan_verification_task"], output_json=VerificationResult)
+    def area_verification_task(self) -> Task:
+        return Task(config=self.tasks_config["plan_verification_task"], output_json=AreaVerificationResult)
+
+    @task
+    def city_verification_task(self) -> Task:
+        return Task(config=self.tasks_config["plan_verification_task"], output_json=CityVerificationResult)
+
+    @task
+    def within_city_verification_task(self) -> Task:
+        return Task(config=self.tasks_config["plan_verification_task"], output_json=WithinCityVerificationResult)
+        
 
     # @crew
     # def crew(self, layer: str) -> Crew:
@@ -600,10 +662,15 @@ class MAIA(MAIABase):
             memory=False
         )
         
-    def crew_verify(self) -> Crew:
+    def crew_verify(self, layer: str) -> Crew:
+        task_dict = {
+            "area": [self.area_verification_task()],
+            "city": [self.city_verification_task()],
+            "within_city": [self.within_city_verification_task()],
+        }
         return Crew(
             agents=[self.plan_verification_specialist()],
-            tasks=[self.plan_verification_task()],
+            tasks=task_dict[layer],
             process=Process.sequential,
             verbose=True,
             memory=False

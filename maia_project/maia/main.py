@@ -123,7 +123,7 @@ def process_request(ui: LLMInterface, maia_system: MAIA, user_request: str) -> D
             result.update(layer_result)
             
             # Verify the layer results
-            verification_result = maia_system.verify_plan(layer_result, complete_request)
+            verification_result = maia_system.verify_plan(layer_result, complete_request, layer)
             print(f"Verification result for {layer} layer (attempt {current_attempt}):", verification_result)
             
             # Check if verification passed
@@ -152,11 +152,6 @@ def process_request(ui: LLMInterface, maia_system: MAIA, user_request: str) -> D
         maia_system.deactivate_layer(layer)
         print(f"Completed {layer} layer processing")
         print(f"Current travel plan after {layer} layer: {result}")
-    
-    
-    # Final verification of the complete travel plan
-    verification_result = maia_system.verify_plan(result, complete_request)
-    print("Final verification result:", verification_result)
     
     print("Final result:", result)
     

@@ -61,8 +61,8 @@ intercity_transit_task:
     Given requirements {travel_request} and existing plan {result}, plan transportation
     of {segment}, identifying the most suitable mode of transport
     (flight, train, bus, car) for each segment. Consider factors such as cost, duration,
-    convenience, scenic value, and user preferences. Provide specific options with timing
-    that aligns with the overall itinerary structure.
+    convenience, scenic value, and user preferences. Provide specific top 1 option with the
+    most suitable timing that aligns with the overall itinerary structure.
   expected_output: >
     Detailed transportation plans for given intercity segment, including recommended
     mode, specific options (flight numbers, train services, etc.), departure/arrival
@@ -86,13 +86,13 @@ accommodation_search_split_task:
 accommodation_search_task:
   agent: accommodation_search_specialist
   description: >
-    Given requirements {travel_request} and existing plan {result}, find suitable
-    accommodation options for {segment} that match user preferences,
+    Given requirements {travel_request} and existing plan {result}, find top 1 the most suitable
+    accommodation option for {segment} that match user preferences,
     budget constraints, and practical considerations. Consider factors such as location
     relative to planned activities, property type, amenities, guest ratings, and value
     for money.
   expected_output: >
-    Provide 2-3 recommended accommodation options with detailed information including
+    Provide top 1 recommended accommodation option with detailed information including
     name, location, property type, room types, price per night, total stay cost, key
     amenities, guest rating, and proximity to activities. Explain why each option is
     suitable for the user based on their constraints and preferences. Highlight the
@@ -175,11 +175,11 @@ local_transport_task:
   agent: local_transport_specialist
   description: >
     Given requirements {travel_request} and existing plan {result}, plan efficient local
-    transportation for {segment}. Recommend the most suitable transportation
-    modes (walking, public transit, taxi, rideshare) for different segments, considering
+    transportation for {segment}. Recommend top 1 the most suitable transportation
+    mode (walking, public transit, taxi, rideshare) for different segments, considering
     factors such as distance, cost, convenience, and local conditions.
   expected_output: >
-    Provide a comprehensive local transportation plan that details how to move between
+    Provide top 1 recommended local transportation plan that details how to move between
     all points of interest in the itinerary. Include recommended modes, specific routes,
     estimated costs, travel durations, and practical tips. Where relevant, include information
     about passes or tickets that offer good value for the planned activities.
@@ -248,19 +248,53 @@ plan_verification_task:
   agent: plan_verification_specialist
   description: >
     Verify whether the proposed travel plan {travel_plan} meets all the user's specified constraints and requirements {travel_request}.
-    Use Z3 solver (in SMT-LIB 2 format strictly) to mathematically verify hard constraints (from_city, time constraints like dates and
-    duration, budget constraints) are strictly satisfied. Then analyze soft constraints (destination within the users's request,
-    accommodation preferences, activity preferences, restaurant preferences, transportation preferences, and any special requirements)
-    to evaluate the degree to which they are met. For hard constraints, create logical formulas that must be true for the plan to
-    be valid, ensuring dates are within range, budget limits are respected, and durations are correct.
-    Identify any violations or inconsistencies between the plan and the constraints with precise reasoning.
-    When evaluating soft constraints, ensure that any soft constraint categories that exist in the travel plan are not empty lists.
-    If a soft constraint category is present in the travel plan but contains an empty list, flag it as a violation and set the general
-    satisfaction status to false. For example, if "activities_planning" or "restaurant_recommendations" exists in the travel plan but
-    is an empty list [], this should be flagged as a violation and the general satisfaction should be set to false. Similarly, if
-    "area_analysis", "city_selection", "intercity_transit","accommodation_search", or "local_transport" exists but is empty, flag it
-    as a violation and set general satisfaction to false. Only soft constraint categories not mentioned in the travel plan can be
-    considered as not applicable.
+    Generate valid SMT-LIB 2 code (as plain text, without any extra escaping or JSON encoding) to mathematically verify the following hard constraints using the Z3 solver:
+    1. From city matches the user's request
+    2. Time constraints (start/end dates match, duration is correct)
+    3. Total budget is within specified limit
+    4. Each component must have greater than 0 length_of_field_list (including {component_name})
+    If any component (e.g., {component_name}) has a `length_of_field_list` equal to 0:
+    - It **must** be considered a failed constraint.
+    - `"satisfied"` must be explicitly set to `false` for that component.
+    - This is a hard constraint; if not met, the verification should mark the task as failed.
+    - Do not treat an empty list as neutral or passable.
+    
+    example input for z3 solver:
+    (set-logic ALL)
+
+    (declare-const from_city String)
+    (declare-const start_date String)
+    (declare-const end_date String)
+    (declare-const duration Int)
+    (declare-const total_budget Real)
+    (declare-const destination (Array Int String))
+    (declare-const area_analysis (Array Int String))
+
+    ;; Constraints
+    (assert (= from_city "New York"))
+    (assert (= start_date "2025-06-10"))
+    (assert (= end_date "2025-06-20"))
+    (assert (= duration 10))
+    (assert (<= total_budget 5000.0))
+
+    ;; Instead of (length ...), assert at least one known index is non-empty
+    (assert (> (str.len (select destination 0)) 0))
+    (assert (> (str.len (select area_analysis 0)) 0))
+
+    (check-sat)
+    (get-model)
+
+
+    Then analyze soft constraints including:
+    1. Destination area meets user preferences
+    2. Accommodation selections match requested amenities, location, and style
+    3. Activities align with interests and accessibility needs
+    4. Restaurant recommendations match dietary restrictions and preferences
+    5. Transportation options reflect mobility requirements
+    6. Special requirements (must-see locations, avoid list) are respected
+    
+    For each constraint, create logical assertions with clear true/false outcomes, providing precise reasoning for any violations.
+    For complex constraints, decompose them into atomic checks with explicit pass/fail criteria.
   expected_output: >
-    A detailed verification report that evaluates whether the travel plan JSON satisfies all constraints and provides precise reasoning
+    A detailed verification report that evaluates whether the travel plan satisfies all constraints and provides precise reasoning
     for each constraint violation or satisfaction.
