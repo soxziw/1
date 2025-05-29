@@ -1,207 +1,244 @@
-request_analysis_task:
+plan_next_task:
   agent: orchestrator
   description: >
-    Analyze the {travel_request} in detail. Extract explicit constraints related to
-    time (dates, duration), budget, and preferences. Identify implicit constraints and
-    requirements from the user's language and context. Organize these into structured
-    constraint categories that can be passed to specialist agents.
+    Given requirements {travel_request}, existing plan {result} and issue you need to address {issue_analysis},
+    determine which task among {agents} needs to be executed next. Evaluate the current state of the travel plan,
+    identify gaps or incomplete sections, and prioritize tasks based on dependencies and user constraints.
+    Only call an agent when there are significant violations of constraints or missing critical information
+    in the existing plan. Prefer agents that can address major gaps, fix constraint violations, or provide
+    essential missing information. Only activate specialists when absolutely necessary to resolve critical issues.
+    Ensure each agent is only executed once in the planning process.
   expected_output: >
-    A comprehensive analysis of the {travel_request} with clearly organized constraint
-    categories (time, budget, preferences) in JSON format. The output should include
-    both explicitly stated constraints and reasonable implicit constraints derived
-    from the request context.
-
-plan_coordination_task:
-  agent: orchestrator
-  description: >
-    Based on the constraints analysis, determine which specialized agents need to be
-    activated for this specific travel request. Create a plan for agent coordination,
-    specifying the sequence of agent activations and how outputs from one agent will
-    feed into others. Ensure all aspects of the request will be addressed while
-    avoiding unnecessary steps. Consider any existing results from previous rounds of processing {result}.
-  expected_output: >
-    A detailed coordination plan specifying which agents will be activated, in what
-    order, and how their outputs will flow between them. The plan should include
-    decision points for handling contingencies and specific constraint verification
-    checkpoints. The plan should incorporate and build upon any existing results {result}.
-  context:
-  - request_analysis_task
+    The next agent to be activated in this layer based on critical gaps or constraint violations in the current plan,
+    or "none" if no further agents are needed in this layer. Each agent should only be selected once and only when
+    absolutely necessary to address significant issues.
 
 area_analysis_task:
   agent: area_analysis_specialist
   description: >
-    Analyze the destination region(s) specified in the user's request, considering the
+    Given requirements {travel_request} and existing plan {result}, analyze the
+    destination area/region/state/country specified in the user's request, considering the
     overall time frame, seasonality, regional events, and peak/off-peak patterns.
     Recommend optimal travel dates within the user's specified time constraints.
-    Identify key sub-regions or areas that should be included in the itinerary based
+    Identify key destinations that should be included in the itinerary based
     on user preferences and constraints.
   expected_output: >
-    A detailed analysis of the destination region(s) with recommended travel dates
+    A detailed analysis of the destination area/region/state/country with recommended travel dates
     and justification. Include information about climate conditions, seasonal
     considerations, regional events during the travel period, and tourist patterns.
-    Provide a list of recommended sub-regions or areas to include in the itinerary
-    with rationale based on user preferences.
-  context:
-  - plan_coordination_task
+    Provide the top 1 recommended destination area/region/state/country to best fit the user's
+    preferences and constraints.
 
 city_selection_task:
   agent: city_selection_specialist
   description: >
-    Based on the area analysis and user constraints, select specific cities to include
-    in the itinerary. Determine the optimal number of days to allocate to each city,
-    ensuring the total matches the user's overall trip duration. Consider factors such
-    as travel distance between cities, density of relevant attractions, and alignment
-    with user preferences.
+    Given requirements {travel_request} and existing plan {result}, select specific 
+    cities to include in the itinerary. Determine the optimal number of days to allocate
+    to each city, ensuring the total matches the user's overall trip duration. Consider
+    factors such as travel distance between cities, density of relevant activities, and
+    alignment with user preferences.
   expected_output: >
     A structured list of selected cities with the number of days allocated to each and
     justification for both the selection and duration. Include a brief overview of what
     makes each city suitable for this specific itinerary and how it aligns with user
     preferences and constraints.
-  context:
-  - plan_coordination_task
-  - area_analysis_task
+
+intercity_transit_split_task:
+  agent: intercity_transit_specialist
+  description: >
+    Given requirements {travel_request} and existing plan {result}, split the selected
+    cities into intercity transit segments based on the user's preferences and constraints.
+    Each segment should be a coherent travel destination with its cities. 
+  expected_output: >
+    A structured list of intercity transit segments with the number of days allocated to each and
+    justification for both the selection and duration. Include a brief overview of what
+    makes each segment suitable for this specific itinerary and how it aligns with user
+    preferences and constraints.
 
 intercity_transit_task:
   agent: intercity_transit_specialist
   description: >
-    Plan transportation between the selected cities, identifying the most suitable
-    mode of transport (flight, train, bus, car) for each segment. Consider factors
-    such as cost, duration, convenience, scenic value, and user preferences. Provide
-    specific options with timing that aligns with the overall itinerary structure.
+    Given requirements {travel_request} and existing plan {result}, plan transportation
+    of {segment}, identifying the most suitable mode of transport
+    (flight, train, bus, car) for each segment. Consider factors such as cost, duration,
+    convenience, scenic value, and user preferences. Provide specific options with timing
+    that aligns with the overall itinerary structure.
   expected_output: >
-    Detailed transportation plans for each intercity segment, including recommended
+    Detailed transportation plans for given intercity segment, including recommended
     mode, specific options (flight numbers, train services, etc.), departure/arrival
     times, duration, approximate cost, and booking information. Include alternative
     options where relevant and explain why the recommended option best meets the
     user's constraints.
-  context:
-  - plan_coordination_task
-  - area_analysis_task
-  - city_selection_task
+
+accommodation_search_split_task:
+  agent: accommodation_search_specialist
+  description: >
+    Given requirements {travel_request} and existing plan {result}, split the selected
+    cities into accommodation search segments based on the user's preferences and constraints.
+    Each segment should be a coherent travel destination with its own activities, restaurants
+    and accommodations.
+  expected_output: >
+    A structured list of accommodation search segments with the number of days allocated to each and
+    justification for both the selection and duration. Include a brief overview of what
+    makes each segment suitable for this specific itinerary and how it aligns with user
+    preferences and constraints.
 
 accommodation_search_task:
   agent: accommodation_search_specialist
   description: >
-    For each city in the itinerary, find suitable accommodation options that match
-    user preferences, budget constraints, and practical considerations. Consider
-    factors such as location relative to planned activities, property type, amenities,
-    guest ratings, and value for money.
+    Given requirements {travel_request} and existing plan {result}, find suitable
+    accommodation options for {segment} that match user preferences,
+    budget constraints, and practical considerations. Consider factors such as location
+    relative to planned activities, property type, amenities, guest ratings, and value
+    for money.
   expected_output: >
-    For each city, provide 2-3 recommended accommodation options with detailed
-    information including name, location, property type, room types, price per night,
-    total stay cost, key amenities, guest rating, and proximity to attractions.
-    Explain why each option is suitable for the user based on their constraints and
-    preferences. Highlight the best overall choice.
-  context:
-  - plan_coordination_task
-  - city_selection_task
+    Provide 2-3 recommended accommodation options with detailed information including
+    name, location, property type, room types, price per night, total stay cost, key
+    amenities, guest rating, and proximity to activities. Explain why each option is
+    suitable for the user based on their constraints and preferences. Highlight the
+    best overall choice.
+
+activities_planning_split_task:
+  agent: activities_planning_specialist
+  description: >
+    Given requirements {travel_request} and existing plan {result}, split the selected
+    cities into activities planning segments based on the user's preferences and constraints.
+    Each segment should be a coherent travel destination with its own activities, restaurants
+    and accommodations.
+  expected_output: >
+    A structured list of activities planning segments with the number of days allocated to each and
+    justification for both the selection and duration. Include a brief overview of what
+    makes each segment suitable for this specific itinerary and how it aligns with user
+    preferences and constraints.
+
 
 activities_planning_task:
   agent: activities_planning_specialist
   description: >
-    For each city in the itinerary, develop a daily activities plan that incorporates
-    attractions and experiences aligned with user interests and preferences. Consider
-    opening hours, admission requirements, geographic proximity, typical visit
-    duration, and crowd patterns. Ensure activities are logically sequenced and fit
-    within the time available each day.
+    Given requirements {travel_request} and existing plan {result}, develop a daily
+    activities plan for {segment} that incorporates activities and
+    experiences aligned with user interests and preferences. Consider opening hours,
+    admission requirements, geographic proximity, typical visit duration, and crowd patterns.
+    Ensure activities are logically sequenced and fit within the time available each day.
   expected_output: >
-    For each city, provide a detailed day-by-day activities plan with specific
-    attractions, experiences, and points of interest. Include timing, location
-    information, admission details, and brief descriptions. Explain how the selected
-    activities align with user preferences and constraints. Ensure the plan is
-    geographically efficient and realistically timed.
-  context:
-  - plan_coordination_task
-  - city_selection_task
-  - accommodation_search_task
+    Provide a detailed day-by-day activities plan with specific activities, experiences,
+    and points of interest. Include timing, location information, admission details, and
+    brief descriptions. Explain how the selected activities align with user preferences and
+    constraints. Ensure the plan is geographically efficient and realistically timed.
+
+restaurant_recommendations_split_task:
+  agent: restaurant_recommendations_specialist
+  description: >
+    Given requirements {travel_request} and existing plan {result}, split the selected
+    cities into restaurant recommendations segments based on the user's preferences and constraints.
+    Each segment should be a coherent travel destination with its own activities, restaurants
+    and accommodations.
+  expected_output: >
+    A structured list of restaurant recommendations segments with the number of days allocated to each and
+    justification for both the selection and duration. Include a brief overview of what
+    makes each segment suitable for this specific itinerary and how it aligns with user
+    preferences and constraints.
 
 restaurant_recommendations_task:
   agent: restaurant_recommendations_specialist
   description: >
-    For each day in the itinerary, recommend restaurant options that showcase local
-    cuisine and align with user preferences and budget constraints. Ensure that
-    lunch and dinner options are provided for every day, while breakfast can be
-    optional. Consider factors such as proximity to planned activities, meal timing,
-    reservation requirements, special dietary needs, and restaurant atmosphere.
-    Each recommended restaurant must be unique across the entire itinerary - no
-    restaurant should appear more than once.
+    Given requirements {travel_request} and existing plan {result}, recommend restaurant
+    options for {segment} that showcase local cuisine and align
+    with user preferences and budget constraints. Ensure that lunch and dinner options are
+    provided for every day, while breakfast can be optional. Consider factors such as proximity
+    to planned activities, meal timing, reservation requirements, special dietary needs, and
+    restaurant atmosphere. Each recommended restaurant must be unique across the entire itinerary
+    - no restaurant should appear more than once.
   expected_output: >
-    For each day in the itinerary, provide a curated list of restaurant recommendations,
-    with mandatory lunch and dinner options and optional breakfast suggestions.
-    Include restaurant names, cuisines, price ranges, signature dishes, location
-    relative to activities, and reservation guidance. Explain why each recommendation
-    suits the user's preferences and constraints. Ensure no day in the itinerary is
-    missing lunch or dinner plans. Each restaurant in the recommendations must be unique
-    - the same restaurant should never be recommended twice across the entire itinerary.
-  context:
-  - plan_coordination_task
-  - city_selection_task
-  - activities_planning_task
+    Provide a curated list of restaurant recommendations, with mandatory lunch and dinner
+    options and optional breakfast suggestions. Include restaurant names, cuisines, price
+    ranges, signature dishes, location relative to activities, and reservation guidance.
+    Explain why each recommendation suits the user's preferences and constraints. Ensure
+    no day in the itinerary is missing lunch or dinner plans. Each restaurant in the
+    recommendations must be unique - the same restaurant should never be recommended twice
+    across the entire itinerary.
+
+local_transport_split_task:
+  agent: local_transport_specialist
+  description: >
+    Given requirements {travel_request} and existing plan {result}, split the selected
+    cities into local transportation segments based on the user's preferences and constraints.
+    Each segment should be a coherent travel destination with its own activities, restaurants,
+    and accommodations.
+  expected_output: >
+    A structured list of local transportation segments with the number of days allocated to each and
+    justification for both the selection and duration. Include a brief overview of what
+    makes each segment suitable for this specific itinerary and how it aligns with user
+    preferences and constraints.
 
 local_transport_task:
   agent: local_transport_specialist
   description: >
-    For each city in the itinerary, plan efficient local transportation between
-    accommodations, activities, and restaurants. Recommend the most suitable
-    transportation modes (walking, public transit, taxi, rideshare) for different
-    segments, considering factors such as distance, cost, convenience, and local
-    conditions.
+    Given requirements {travel_request} and existing plan {result}, plan efficient local
+    transportation for {segment}. Recommend the most suitable transportation
+    modes (walking, public transit, taxi, rideshare) for different segments, considering
+    factors such as distance, cost, convenience, and local conditions.
   expected_output: >
-    For each city, provide a comprehensive local transportation plan that details
-    how to move between all points of interest in the itinerary. Include recommended
-    modes, specific routes, estimated costs, travel durations, and practical tips.
-    Where relevant, include information about passes or tickets that offer good value
-    for the planned activities.
-  context:
-  - plan_coordination_task
-  - city_selection_task
-  - accommodation_search_task
-  - activities_planning_task
-  - restaurant_recommendations_task
+    Provide a comprehensive local transportation plan that details how to move between
+    all points of interest in the itinerary. Include recommended modes, specific routes,
+    estimated costs, travel durations, and practical tips. Where relevant, include information
+    about passes or tickets that offer good value for the planned activities.
 
 area_results_merge_task:
-  agent: orchestrator
+  agent: plan_merger_specialist
   description: >
-    Merge the results from the area analysis layer specialists into a cohesive
-    area-level travel plan. Ensure all area analysis data is properly formatted
-    and integrated into the TravelPlanAreaLayer structure.
+    Given requirements {travel_request} and existing plan {result}, merge the results
+    from the area analysis layer specialists into a cohesive area-level travel plan.
+    Ensure all area analysis data is properly formatted and integrated into the
+    TravelPlanAreaLayer structure. Verify that key travel information like "from_city",
+    "destination", "start_date", "end_date", "duration", and "total_budget" align with
+    the user's requirements.
   expected_output: >
     A comprehensive area-level travel plan in TravelPlanAreaLayer format that includes
     all area analysis information. The output should contain well-structured data about
     the broader destination area including regional information, climate data, and general
-    travel considerations.
+    travel considerations. Ensure the plan maintains core travel parameters like from_city,
+    destination, date range, duration, and budget that align with the original request.
   context:
-  - plan_coordination_task
   - area_analysis_task
 
 city_results_merge_task:
-  agent: orchestrator
+  agent: plan_merger_specialist
   description: >
-    Merge the results from the city selection and intercity transit specialists
-    into a cohesive city-level travel plan. Ensure all city analysis and intercity
-    transit data is properly formatted and integrated into the TravelPlanCityLayer structure.
+    Given requirements {travel_request} and existing plan {result}, merge the results
+    from the city selection and intercity transit specialists into a cohesive city-level
+    travel plan. Ensure any available city analysis and intercity transit data is properly
+    formatted and integrated into the TravelPlanCityLayer structure. Verify that key travel
+    information like "from_city", "destination", "start_date", "end_date", "duration", and
+    Note that city selection and intercity transit information may be optional based on context.
   expected_output: >
     A comprehensive city-level travel plan in TravelPlanCityLayer format that includes
-    all city selection and intercity transit information. The output should contain
-    well-structured data about the selected cities and transportation options between them.
+    any available city selection and intercity transit information. The output should contain
+    well-structured data about the selected cities and transportation options between them if present in the context.
+    Ensure the plan maintains core travel parameters like from_city, destination, date range, duration, 
+    and budget that align with the original request.
   context:
-  - plan_coordination_task
   - city_selection_task
   - intercity_transit_task
 
 within_city_results_merge_task:
-  agent: orchestrator
+  agent: plan_merger_specialist
   description: >
-    Merge the results from the within-city specialists (accommodation, activities, restaurant,
-    and local transportation) into a cohesive within-city level travel plan. Ensure all
-    data is properly formatted and integrated into the TravelPlanWithinCityLayer structure.
+    Given requirements {travel_request} and existing plan {result}, merge the results
+    from the within-city specialists (accommodation, activities, restaurant, and local
+    transportation) into a cohesive within-city level travel plan. Ensure all data is
+    properly formatted and integrated into the TravelPlanWithinCityLayer structure.
+    Verify that key travel information like "from_city", "destination", "start_date", "end_date", 
+    "duration", and "total_budget" align with the user's requirements in the travel request.
+    Note that accommodation, activities, and restaurant information may be optional based on context.
   expected_output: >
     A comprehensive within-city level travel plan in TravelPlanWithinCityLayer format that
-    includes all accommodation, activities, restaurant, and local transportation information.
-    The output should contain well-structured data about accommodations, daily activities,
-    restaurant options, and local transportation recommendations.
+    includes any available accommodation, activities, restaurant, and local transportation information.
+    The output should contain well-structured data that maintains core travel parameters like
+    from_city, destination, date range, duration, and budget that align with the original request.
+    Ensure the plan properly integrates optional data about accommodations, daily activities,
+    restaurant options, and local transportation recommendations depending on what is available in the context.
   context:
-  - plan_coordination_task
   - accommodation_search_task
   - activities_planning_task
   - restaurant_recommendations_task
@@ -211,11 +248,19 @@ plan_verification_task:
   agent: plan_verification_specialist
   description: >
     Verify whether the proposed travel plan {travel_plan} meets all the user's specified constraints and requirements {travel_request}.
-    Use Z3 solver (in SMT-LIB 2 format strictly) to mathematically verify hard constraints (time constraints like dates and duration,
-    budget constraints) are strictly satisfied. Then analyze soft constraints (accommodation preferences,
-    activity preferences, restaurant preferences, transportation preferences, and any special requirements) to evaluate the degree
-    to which they are met. For hard constraints, create logical formulas that must be true for the plan to
+    Use Z3 solver (in SMT-LIB 2 format strictly) to mathematically verify hard constraints (from_city, time constraints like dates and
+    duration, budget constraints) are strictly satisfied. Then analyze soft constraints (destination within the users's request,
+    accommodation preferences, activity preferences, restaurant preferences, transportation preferences, and any special requirements)
+    to evaluate the degree to which they are met. For hard constraints, create logical formulas that must be true for the plan to
     be valid, ensuring dates are within range, budget limits are respected, and durations are correct.
     Identify any violations or inconsistencies between the plan and the constraints with precise reasoning.
+    When evaluating soft constraints, ensure that any soft constraint categories that exist in the travel plan are not empty lists.
+    If a soft constraint category is present in the travel plan but contains an empty list, flag it as a violation and set the general
+    satisfaction status to false. For example, if "activities_planning" or "restaurant_recommendations" exists in the travel plan but
+    is an empty list [], this should be flagged as a violation and the general satisfaction should be set to false. Similarly, if
+    "area_analysis", "city_selection", "intercity_transit","accommodation_search", or "local_transport" exists but is empty, flag it
+    as a violation and set general satisfaction to false. Only soft constraint categories not mentioned in the travel plan can be
+    considered as not applicable.
   expected_output: >
-    A detailed verification report that evaluates whether the travel plan JSON satisfies all constraints
+    A detailed verification report that evaluates whether the travel plan JSON satisfies all constraints and provides precise reasoning
+    for each constraint violation or satisfaction.

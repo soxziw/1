@@ -1,0 +1,198 @@
+{'from_city': 'New York', 'destination': 'California, USA', 'start_date': '2025-06-10', 'end_date': '2025-06-20', 'duration': 10, 'total_budget': 5000, 'area_analysis': [
+        {'name': 'California', 'description': 'Traveling to California from June 10 to June 20,
+            2025, is optimal as the weather will be warm, with average daily high temperatures reaching the low 80s°F (27-28°C). This period is an excellent time for outdoor activities like sightseeing and hiking due to low humidity. While regions like Southern California may experience heat waves, most tourist spots, including the Golden Gate Bridge, Hollywood Walk of Fame, and Yosemite National Park, remain excellent choices for exploration. Noteworthy events during this time include various local music festivals and outdoor cinema screenings, enhancing the travel experience with local culture and entertainment.', 'start_date': '2025-06-10', 'end_date': '2025-06-20', 'duration': 10, 'total_budget': 5000.0
+        }
+    ], 'city_selection': [
+        {'name': 'San Francisco', 'description': "San Francisco serves as a perfect starting point for your trip, offering iconic landmarks such as the Golden Gate Bridge, Alcatraz Island, and Fisherman's Wharf. The city's vibrant culture, seafood cuisine, and nearby hiking opportunities in the Marin Headlands align perfectly with your preferences.", 'start_date': '2025-06-10', 'end_date': '2025-06-12', 'duration': 2, 'total_budget': 1000.0
+        },
+        {'name': 'Los Angeles', 'description': 'Los Angeles is renowned for its Hollywood attractions like the Hollywood Walk of Fame and offers diverse experiences including beaches in Santa Monica and hiking options in Griffith Park. This city combines urban scenic views with entertainment and local cuisine, making it an excellent fit for your itinerary.', 'start_date': '2025-06-12', 'end_date': '2025-06-15', 'duration': 3, 'total_budget': 1500.0
+        },
+        {'name': 'Yosemite National Park', 'description': 'As a must-see destination for nature enthusiasts, Yosemite National Park features stunning landscapes, waterfalls, and miles of hiking trails. Spending time here offers a counterbalance to the urban experiences in San Francisco and Los Angeles, allowing for relaxation and adventure in nature.', 'start_date': '2025-06-15', 'end_date': '2025-06-18', 'duration': 3, 'total_budget': 1500.0
+        },
+        {'name': 'San Diego', 'description': 'San Diego rounds out your trip with its beautiful beach activities, local American cuisine, and vibrant downtown. Visiting places like Balboa Park and the San Diego Zoo provides cultural experiences, while the beach offers relaxation and recreational options. This city offers a laid-back vibe perfect for winding down your trip.', 'start_date': '2025-06-18', 'end_date': '2025-06-20', 'duration': 2, 'total_budget': 1000.0
+        }
+    ], 'intercity_transit': [
+        {'from_city': 'New York', 'to_city': 'San Francisco', 'mode': 'flight', 'start_time': '2025-06-10 06: 59', 'end_time': '2025-06-10 12: 24', 'duration': 505, 'price': 362.0, 'details': 'Flight: F9 3237 (Frontier) from JFK to LAS at 06: 59, layover for 45 min, then Flight: F9 3019 to SFO arriving at 12:24. Total duration including layover is 505 minutes.'
+        },
+        {'from_city': 'New York', 'to_city': 'San Francisco', 'mode': 'flight', 'start_time': '2025-06-10 07: 55', 'end_time': '2025-06-10 11: 14', 'duration': 379, 'price': 589.0, 'details': 'Flight: AA 179 (American Airlines) direct from JFK to SFO, duration is 379 minutes. Comfortable legroom (31 in) and Wi-Fi for a fee.'
+        },
+        {'from_city': 'New York', 'to_city': 'San Francisco', 'mode': 'flight', 'start_time': '2025-06-10 08: 20', 'end_time': '2025-06-10 11: 54', 'duration': 394, 'price': 661.0, 'details': 'Flight: B6 215 (JetBlue) direct from JFK to SFO, duration is 394 minutes. Above average legroom (32 in) and free Wi-Fi available.'
+        },
+        {'from_city': 'New York', 'to_city': 'San Francisco', 'mode': 'flight', 'start_time': '2025-06-10 09: 30', 'end_time': '2025-06-10 12: 59', 'duration': 389, 'price': 693.0, 'details': 'Flight: AS 33 (Alaska Airlines) direct from JFK to SFO, duration is 389 minutes. Wi-Fi for a fee and average legroom (31 in).'
+        },
+        {'from_city': 'San Francisco', 'to_city': 'Los Angeles', 'mode': 'rental car', 'start_time': '2025-06-12 09: 00', 'end_time': '2025-06-12 12: 30', 'duration': 210, 'price': 300.0, 'details': 'A rental car from SIXT offers one-way options from San Francisco to Los Angeles with no additional drop-off fee. The drive typically takes around 3 to 4 hours depending on traffic conditions. You can pick up the car at the airport or city center locations. It provides flexibility in travel time and scenic views along the Pacific Coast Highway. Make sure to book in advance to secure the best rate.'
+        },
+        {'from_city': 'San Francisco', 'to_city': 'Los Angeles', 'mode': 'rental car', 'start_time': '2025-06-12 08: 00', 'end_time': '2025-06-12 12: 00', 'duration': 240, 'price': 270.0, 'details': 'An alternative rental from Budget offering a compact car for the journey. This option is slightly cheaper and has pickup availability at various locations. The duration is about 4 hours, potentially giving a scenic drive option via Pacific Coast Highway. Ensure to check for any promotional discounts that might apply.'
+        },
+        {'from_city': 'San Francisco', 'to_city': 'Los Angeles', 'mode': 'rental car', 'start_time': '2025-06-12 10: 00', 'end_time': '2025-06-12 14: 00', 'duration': 240, 'price': 280.0, 'details': 'A rental option from Enterprise including a standard sedan, ideal for comfort during the trip. Hotel pickup options make it convenient, and the projected travel time is around 4 hours, making it suitable for a more leisurely start to the day. Current prices suggest about $280, so it remains within budget.'
+        },
+        {'from_city': 'Los Angeles', 'to_city': 'Yosemite National Park', 'mode': 'rental car', 'start_time': '2025-06-15 07: 00', 'end_time': '2025-06-15 12: 00', 'duration': 300, 'price': 200.0, 'details': 'Rent a Toyota Camry or similar vehicle for approximately $25 per day from Expedia. The estimated total cost for 3 days (including fees) is around $200. This includes unlimited mileage and is available from Los Angeles, ensuring convenience for the trip.'
+        },
+        {'from_city': 'Yosemite National Park', 'to_city': 'Los Angeles', 'mode': 'rental car', 'start_time': '2025-06-18 10: 00', 'end_time': '2025-06-18 15: 00', 'duration': 300, 'price': 200.0, 'details': 'Return the rented Toyota Camry to Los Angeles International Airport for the same rate upon completion of your trip on June 18, 2025.'
+        },
+        {'from_city': 'Yosemite National Park', 'to_city': 'San Diego', 'mode': 'rental car', 'start_time': '2025-06-18 09: 00', 'end_time': '2025-06-18 15: 00', 'duration': 360, 'price': 150.0, 'details': 'Picking up a rental car in Yosemite National Park, traveling to San Diego via CA-99 and I-5 S. Estimated driving time is about 6 hours, allowing for moderate stops for sightseeing and meals.'
+        }
+    ], 'accommodation_search': [
+        {'name': 'Hotel Riu Plaza Fisherman’s Wharf', 'location': 'Fisherman’s Wharf, San Francisco', 'checkin_date': '2025-06-10', 'checkout_date': '2025-06-12', 'price': 205.0, 'rating': 4.0, 'description': 'Down-to-earth property offering a restaurant/bar, plus a gym & a heated outdoor pool.'
+        },
+        {'name': 'Holiday Inn Express & Suites San Francisco Fishermans Wharf by IHG', 'location': 'Fisherman’s Wharf, San Francisco', 'checkin_date': '2025-06-10', 'checkout_date': '2025-06-12', 'price': 232.0, 'rating': 4.2, 'description': 'Straightforward hotel offering relaxed rooms & a gym, plus free breakfast & Wi-Fi.'
+        },
+        {'name': 'BEI San Francisco, Trademark Collection by Wyndham', 'location': 'Downtown, San Francisco', 'checkin_date': '2025-06-10', 'checkout_date': '2025-06-12', 'price': 161.0, 'rating': 4.0, 'description': 'Bright rooms in a modern property offering a hip restaurant, a cafe & a gym, plus event space.'
+        },
+        {'name': 'Freehand Los Angeles', 'location': 'Los Angeles, California', 'checkin_date': '2025-06-12', 'checkout_date': '2025-06-15', 'price': 124.0, 'rating': 4.1, 'description': 'Trendy dorms & rooms in a funky lodging with dining & breakfast, plus a rooftop pool & bar. Located nearby iconic attractions such as The Broad and Shake Shack.'
+        },
+        {'name': 'Hilton Los Angeles/Universal City', 'location': 'Universal City, California', 'checkin_date': '2025-06-12', 'checkout_date': '2025-06-15', 'price': 265.0, 'rating': 4.2, 'description': 'Sleek 24-story hotel near Universal Studios, featuring Hollywood views, an outdoor pool & a lounge. Easy access to nearby attractions like Universal Studios Hollywood.'
+        },
+        {'name': 'The Wayfarer Downtown LA, Tapestry Collection by Hilton', 'location': 'Los Angeles, California', 'checkin_date': '2025-06-12', 'checkout_date': '2025-06-15', 'price': 182.0, 'rating': 4.0, 'description': "Trendy hotel offering indoor & rooftop bars, plus a cafe, a guest kitchen & co-working space. It's close to attractions like the GRAMMY Museum and is in a vibrant neighborhood."
+        },
+        {'name': 'Yosemite Valley Lodge', 'location': 'Yosemite Valley, Yosemite National Park, California', 'checkin_date': '2025-06-15', 'checkout_date': '2025-06-18', 'price': 581.0, 'rating': 4.3, 'description': 'Homey lodging with waterfall views & free Wi-Fi, plus a restaurant/lounge & a park shuttle stop. Total stay cost: $1,
+            742, located near Lower Yosemite Fall Trailhead.'
+        },
+        {'name': 'Curry Village', 'location': 'Yosemite National Park, California', 'checkin_date': '2025-06-15', 'checkout_date': '2025-06-18', 'price': 294.0, 'rating': 4.2, 'description': 'Budget property with simple, heated lodge rooms & cabins, plus a free shuttle & a seasonal pool. Total stay cost: $882. Close to Curry Village Pizza Deck.'
+        },
+        {'name': 'The Ahwahnee', 'location': 'Yosemite National Park, California', 'checkin_date': '2025-06-15', 'checkout_date': '2025-06-18', 'price': 1064.0, 'rating': 4.6, 'description': 'Historic, landmark hotel offering warm, cozy quarters, plus grand public spaces, views & a pool. Total stay cost: $3,
+            192, near Yosemite Falls.'
+        },
+        {'name': 'Hilton San Diego Bayfront', 'location': 'San Diego, California', 'checkin_date': '2025-06-18', 'checkout_date': '2025-06-20', 'price': 240.0, 'rating': 4.3, 'description': 'Bayside lodging with a waterfront pool, a spa & refined dining, plus 165,
+            000 sq ft of meeting space. The property is conveniently located, just a 5-minute walk from Balboa Park and a 10-minute taxi ride from San Diego International Airport.'
+        },
+        {'name': 'Paradise Point Resort & Spa', 'location': 'San Diego, California', 'checkin_date': '2025-06-18', 'checkout_date': '2025-06-20', 'price': 363.0, 'rating': 4.3, 'description': 'Chic rooms & bungalows on a private island with a mile of beach, plus 5 pools, dining & a spa. Located a short distance from SeaWorld San Diego, making it ideal for your planned beach activities and sightseeing.'
+        },
+        {'name': 'Andaz San Diego, by Hyatt', 'location': 'San Diego, California', 'checkin_date': '2025-06-18', 'checkout_date': '2025-06-20', 'price': 247.0, 'rating': 4.3, 'description': 'Chic rooms & suites in a stylish property with a trendy rooftop restaurant/bar & pool. Located near downtown, perfect for exploring local cuisine and culture.'
+        }
+    ], 'attractions_planning': [], 'restaurant_recommendations': [
+        {'name': 'Sotto Mare', 'location': '552 Green St, San Francisco, CA', 'date': '2025-06-10', 'time': '11: 30 AM', 'price': 50.0, 'rating': 4.6, 'description': "Sotto Mare is renowned for its excellent seafood, providing a taste of local flavors in a cozy, authentic setting. Perfectly located near Fisherman's Wharf, it's an ideal lunch stop before exploring nearby attractions.", 'cuisine_type': 'Seafood'
+        },
+        {'name': "Scoma's Restaurant", 'location': '1965 Al Scoma Way, San Francisco, CA', 'date': '2025-06-10', 'time': '8: 15 PM', 'price': 100.0, 'rating': 4.6, 'description': "Scoma's is a must-visit for its fresh, local seafood with stunning waterfront views. The extensive menu offers something for everyone, making it a fantastic option for dinner after a day of sightseeing.", 'cuisine_type': 'Seafood'
+        },
+        {'name': 'Delancey Street Restaurant', 'location': '600 The Embarcadero, San Francisco, CA', 'date': '2025-06-11', 'time': '11: 00 AM', 'price': 50.0, 'rating': 4.5, 'description': 'Offering a diverse menu focusing on quality ingredients, Delancey Street is great for lunch. Its location on the waterfront is conveniently accessible during your day of exploring.', 'cuisine_type': 'American'
+        },
+        {'name': 'Trestle Restaurant', 'location': '531 Jackson St, San Francisco, CA', 'date': '2025-06-11', 'time': '6: 00 PM', 'price': 75.0, 'rating': 4.6, 'description': 'Trestle offers a modern twist on New American cuisine with an emphasis on seasonal ingredients. The inviting atmosphere makes it an excellent choice for dinner in the heart of the city.', 'cuisine_type': 'New American'
+        },
+        {'name': 'Girl & the Goat Los Angeles', 'location': '555-3 Mateo St, Los Angeles, CA', 'date': '2025-06-12', 'time': '12: 30', 'price': 75.0, 'rating': 4.8, 'description': 'Innovative menu with well-presented dishes and great flavors, featuring contemporary New American cuisine.', 'cuisine_type': 'New American'
+        },
+        {'name': 'The Little Door', 'location': '8164 W 3rd St, Los Angeles, CA', 'date': '2025-06-12', 'time': '18: 30', 'price': 100.0, 'rating': 4.5, 'description': 'A cozy spot known for its Mediterranean influences and exquisite ambiance, perfect for a romantic dinner.', 'cuisine_type': 'Modern European'
+        },
+        {'name': 'Bottega Louie', 'location': '700 S Grand Ave, Los Angeles, CA', 'date': '2025-06-13', 'time': '12: 30', 'price': 75.0, 'rating': 4.5, 'description': 'Lively Italian eatery with a bakery, perfect for enjoying lunch in an upscale yet casual setting.', 'cuisine_type': 'Italian'
+        },
+        {'name': 'Oste', 'location': '8142 W 3rd St, Los Angeles, CA', 'date': '2025-06-13', 'time': '18: 30', 'price': 75.0, 'rating': 4.7, 'description': 'A neighborhood Italian restaurant offering fresh pasta and a warm atmosphere, ideal for dinner.', 'cuisine_type': 'Italian'
+        },
+        {'name': 'Water Grill', 'location': '544 S Grand Ave, Los Angeles, CA', 'date': '2025-06-14', 'time': '12: 30', 'price': 75.0, 'rating': 4.5, 'description': 'Renowned for its fresh seafood and vibrant atmosphere, perfect for a delightful lunch.', 'cuisine_type': 'Seafood'
+        },
+        {'name': 'Répépublique Café Bakery & République Restaurant', 'location': '624 S La Brea Ave, Los Angeles, CA', 'date': '2025-06-14', 'time': '18: 30', 'price': 100.0, 'rating': 4.5, 'description': 'A modern French bistro that serves seasonal dishes in a beautiful space.', 'cuisine_type': 'French'
+        },
+        {'name': 'Redbird', 'location': '114 E 2nd St, Los Angeles, CA', 'date': '2025-06-15', 'time': '12: 30', 'price': 75.0, 'rating': 4.6, 'description': 'An elegant American eatery, perfect for lunch with a great view and a stylish environment.', 'cuisine_type': 'New American'
+        },
+        {'name': "Fleming's Prime Steakhouse & Wine Bar", 'location': '800 W Olympic Blvd Suite A-135, Los Angeles, CA', 'date': '2025-06-15', 'time': '18: 30', 'price': 100.0, 'rating': 4.5, 'description': 'A high-end steakhouse known for premium cuts and an extensive wine list, ideal for a special dinner.', 'cuisine_type': 'Fine Dining'
+        },
+        {'name': 'The Ahwahnee Dining Room', 'location': 'Yosemite Valley, CA', 'date': '2025-06-15', 'time': '18: 00', 'price': 100.0, 'rating': 3.9, 'description': 'A premier dining location specializing in traditional American cuisine, offering a delightful ambiance perfect for a special dinner after a day of hiking.', 'cuisine_type': 'Traditional American'
+        },
+        {'name': 'The Mountain Room', 'location': 'Yosemite Valley, CA', 'date': '2025-06-16', 'time': '18: 00', 'price': 50.0, 'rating': 4.1, 'description': 'Provides stunning views of the surrounding landscape, it serves American dishes and is ideal for enjoying a relaxing dinner.', 'cuisine_type': 'American'
+        },
+        {'name': 'Base Camp Eatery', 'location': 'Yosemite Valley, CA', 'date': '2025-06-17', 'time': '12: 30', 'price': 20.0, 'rating': 3.5, 'description': 'Casual eatery providing fast-casual options with vegan options available, perfect for a quick and hearty lunch during your adventures.', 'cuisine_type': 'American'
+        },
+        {'name': 'Curry Village Dining Pavilion', 'location': 'Tuolumne Meadows, CA', 'date': '2025-06-18', 'time': '12: 00', 'price': 25.0, 'rating': 3.3, 'description': 'A quaint dining area featuring a casual atmosphere with hearty meals, including vegan options, ideal for a relaxed lunch.', 'cuisine_type': 'American'
+        },
+        {'name': 'C Level Lounge', 'location': '880 Harbor Island Dr, San Diego, CA', 'date': '2025-06-18', 'time': '12: 00', 'price': 30.0, 'rating': 4.6, 'description': 'The seafood pasta is awesome and the Black Bramble Martini was to die for!', 'cuisine_type': 'Lounge'
+        },
+        {'name': 'Rustic Root', 'location': '535 Fifth Ave, San Diego, CA', 'date': '2025-06-18', 'time': '18: 00', 'price': 50.0, 'rating': 4.4, 'description': 'This restaurant checks all the boxes… food, drinks, atmosphere, and service.', 'cuisine_type': 'American'
+        },
+        {'name': "Tom Ham's Lighthouse", 'location': '2150 Harbor Island Dr, San Diego, CA', 'date': '2025-06-19', 'time': '12: 00', 'price': 50.0, 'rating': 4.5, 'description': 'The food and drinks were delicious and our server was impeccable.', 'cuisine_type': 'Seafood'
+        },
+        {'name': 'Water Grill San Diego', 'location': '615 J St, San Diego, CA', 'date': '2025-06-19', 'time': '18: 00', 'price': 100.0, 'rating': 4.4, 'description': 'Amazing food, great service, and hip, chic ambience.', 'cuisine_type': 'Seafood'
+        },
+        {'name': 'Island Prime', 'location': '880 Harbor Island Dr, San Diego, CA', 'date': '2025-06-20', 'time': '12: 00', 'price': 100.0, 'rating': 4.6, 'description': 'I ordered the catch of the day (fish) and it was cooked to perfection.', 'cuisine_type': 'American'
+        },
+        {'name': 'Fork & Knife', 'location': '7000 Mission Blvd, San Diego, CA', 'date': '2025-06-20', 'time': '18: 00', 'price': 50.0, 'rating': 4.5, 'description': 'Their burgers are made from the freshest ingredients and are simply divine.', 'cuisine_type': 'American'
+        }
+    ], 'local_transport': [], 'activities_planning': [
+        {'name': 'Golden Gate Bridge', 'location': 'California', 'date': '2025-06-10', 'description': 'An iconic symbol of San Francisco, the Golden Gate Bridge offers stunning views and photo opportunities. Visitors can walk or bike across the bridge and explore nearby vista points.', 'start_time': '09: 00', 'end_time': '11: 00', 'duration_hours': 2.0, 'price': 0.0
+        },
+        {'name': 'Exploratorium', 'location': 'Pier 15, Embarcadero at Green St, San Francisco', 'date': '2025-06-10', 'description': 'A museum of science, art, and human perception. With hands-on exhibits that encourage exploration, this is perfect for travelers interested in science and interactive experiences.', 'start_time': '11: 30', 'end_time': '13: 30', 'duration_hours': 2.0, 'price': 29.95
+        },
+        {'name': "Lunch at Fisherman's Wharf", 'location': "Fisherman's Wharf, San Francisco", 'date': '2025-06-10', 'description': 'Enjoy a waterfront meal featuring fresh seafood and local cuisine at one of the many restaurants in Fisherman’s Wharf.', 'start_time': '13: 45', 'end_time': '14: 45', 'duration_hours': 1.0, 'price': 50.0
+        },
+        {'name': 'Aquarium of the Bay', 'location': 'PIER 39, The Embarcadero & Beach St, San Francisco', 'date': '2025-06-10', 'description': "Explore the underwater world with exhibits showcasing local marine life. It's an engaging and educational experience for all ages.", 'start_time': '15: 00', 'end_time': '16: 30', 'duration_hours': 1.5, 'price': 24.25
+        },
+        {'name': 'Coit Tower', 'location': '1 Telegraph Hill Blvd, San Francisco', 'date': '2025-06-10', 'description': "Visit this historic landmark for panoramic views of the city. Climb to the top for breathtaking vistas and murals depicting San Francisco's history.", 'start_time': '17: 00', 'end_time': '18: 30', 'duration_hours': 1.5, 'price': 10.0
+        },
+        {'name': 'Evening stroll at Pier 39', 'location': 'Pier 39, San Francisco', 'date': '2025-06-10', 'description': 'Enjoy the lively atmosphere with street performances and sea lions while relaxing by the bay.', 'start_time': '19: 00', 'end_time': '20: 00', 'duration_hours': 1.0, 'price': 0.0
+        },
+        {'name': "Dinner at Scoma's Restaurant", 'location': "Pier 47, Fisherman's Wharf, San Francisco", 'date': '2025-06-10', 'description': 'A renowned restaurant specializing in fresh seafood. Enjoy a delightful meal with waterfront views to conclude an exciting day.', 'start_time': '20: 15', 'end_time': '21: 45', 'duration_hours': 1.5, 'price': 100.0
+        },
+        {'name': 'Day 2: Visit Golden Gate Park', 'location': 'Golden Gate Park, San Francisco', 'date': '2025-06-11', 'description': 'Spend the morning exploring one of the largest urban parks in the world, offering gardens, museums, playgrounds, and trails.', 'start_time': '09: 00', 'end_time': '12: 00', 'duration_hours': 3.0, 'price': 0.0
+        },
+        {'name': 'Japanese Tea Garden', 'location': '75 Hagiwara Tea Garden Dr, San Francisco', 'date': '2025-06-11', 'description': 'Visit this peaceful garden that embodies the beauty of Japanese landscape gardening. Perfect for a quiet stroll and enjoying nature.', 'start_time': '12: 15', 'end_time': '13: 15', 'duration_hours': 1.0, 'price': 12.0
+        },
+        {'name': 'Lunch at Park Chalet', 'location': 'Golden Gate Park, San Francisco', 'date': '2025-06-11', 'description': 'Dine on classic American dishes while enjoying views of the park.', 'start_time': '13: 30', 'end_time': '14: 30', 'duration_hours': 1.0, 'price': 45.0
+        },
+        {'name': 'Visit California Academy of Sciences', 'location': '55 Music Concourse Dr, San Francisco', 'date': '2025-06-11', 'description': 'Explore diverse exhibits featuring an aquarium, planetarium, and natural history museum all in one place.', 'start_time': '15: 00', 'end_time': '17: 00', 'duration_hours': 2.0, 'price': 39.95
+        },
+        {'name': 'Dinner in the Mission District', 'location': 'Mission District, San Francisco', 'date': '2025-06-11', 'description': 'Explore eclectic dining options in this vibrant neighborhood, known for its local cuisine and artistic vibe.', 'start_time': '18: 00', 'end_time': '19: 30', 'duration_hours': 1.5, 'price': 75.0
+        },
+        {'name': 'Day 3: Visit Alcatraz Island', 'location': 'Alcatraz Island, San Francisco', 'date': '2025-06-12', 'description': 'Explore this infamous former prison and learn about its history. Make sure to book tickets in advance.', 'start_time': '09: 00', 'end_time': '12: 00', 'duration_hours': 3.0, 'price': 41.0
+        },
+        {'name': 'Lunch at Hard Rock Cafe', 'location': 'Pier 39, San Francisco', 'date': '2025-06-12', 'description': "Enjoy a meal at this themed restaurant featuring American cuisine and rock 'n roll memorabilia.", 'start_time': '12: 30', 'end_time': '13: 30', 'duration_hours': 1.0, 'price': 50.0
+        },
+        {'name': 'Afternoon Sea Lion Viewing', 'location': 'Pier 39, San Francisco', 'date': '2025-06-12', 'description': 'Experience the lively sea lions lounging on the docks, a must-see attraction.', 'start_time': '13: 45', 'end_time': '14: 30', 'duration_hours': 0.75, 'price': 0.0
+        },
+        {'name': 'Explore Chinatown', 'location': 'Chinatown, San Francisco', 'date': '2025-06-12', 'description': 'Visit the largest Chinatown outside Asia, featuring unique shops, markets, and Chinese culture.', 'start_time': '15: 00', 'end_time': '17: 00', 'duration_hours': 2.0, 'price': 0.0
+        },
+        {'name': 'Dinner at Z & Y Restaurant', 'location': 'Chinatown, San Francisco', 'date': '2025-06-12', 'description': 'Experience authentic Chinese dishes and flavors, a distinct highlight of your San Francisco voyage.', 'start_time': '17: 15', 'end_time': '18: 45', 'duration_hours': 1.5, 'price': 65.0
+        },
+        {'name': 'Hollywood Walk of Fame', 'location': 'Hollywood Boulevard, Vine St, Los Angeles, CA', 'date': '2025-06-12', 'description': 'A world-renowned landmark featuring over 2,
+            600 brass stars embedded in the sidewalks along Hollywood Boulevard, honoring those in the entertainment industry.', 'start_time': '09: 00', 'end_time': '10: 30', 'duration_hours': 1.5, 'price': 0.0
+        },
+        {'name': 'Griffith Observatory', 'location': '2800 E Observatory Rd, Los Angeles, CA', 'date': '2025-06-12', 'description': 'An iconic observatory offering spectacular views of the Los Angeles skyline and the Hollywood Sign; features interactive exhibits and planetarium shows.', 'start_time': '11: 00', 'end_time': '13: 00', 'duration_hours': 2.0, 'price': 0.0
+        },
+        {'name': 'Santa Monica Pier', 'location': 'Santa Monica, CA', 'date': '2025-06-12', 'description': 'A vibrant beachside amusement area featuring an amusement park, aquarium, and family-friendly restaurants; perfect for beach activities.', 'start_time': '14: 00', 'end_time': '17: 00', 'duration_hours': 3.0, 'price': 0.0
+        },
+        {'name': 'Hollywood Sign Hike', 'location': 'Los Angeles, CA', 'date': '2025-06-13', 'description': 'A popular hiking trail that leads to the famous Hollywood Sign with rewarding panoramic views of the city; ideal for hiking enthusiasts.', 'start_time': '08: 00', 'end_time': '10: 30', 'duration_hours': 2.5, 'price': 0.0
+        },
+        {'name': 'Universal Studios Hollywood', 'location': 'Universal City, CA', 'date': '2025-06-13', 'description': 'A film studio and theme park offering rides and attractions themed around blockbuster movies and television shows; a top entertainment choice.', 'start_time': '11: 30', 'end_time': '17: 30', 'duration_hours': 6.0, 'price': 139.0
+        },
+        {'name': 'La Brea Tar Pits and Museum', 'location': '5801 Wilshire Blvd, Los Angeles, CA', 'date': '2025-06-14', 'description': 'An active paleontological site featuring tar pits and a museum showcasing prehistoric fossils, perfect for those interested in natural history.', 'start_time': '09: 00', 'end_time': '12: 00', 'duration_hours': 3.0, 'price': 15.0
+        },
+        {'name': 'The Getty', 'location': '1200 Getty Center Dr, Los Angeles, CA', 'date': '2025-06-14', 'description': 'An art museum that emphasizes the arts and humanities, featuring impressive collections and landscapes, as well as architectural beauty.', 'start_time': '13: 00', 'end_time': '15: 30', 'duration_hours': 2.5, 'price': 0.0
+        },
+        {'name': 'Venice Boardwalk', 'location': 'Beach pavilion, Venice, CA', 'date': '2025-06-15', 'description': 'A lively boardwalk filled with street performers, unique shops, and eateries; a great place to soak in the vibrant atmosphere of Venice Beach.', 'start_time': '10: 00', 'end_time': '13: 00', 'duration_hours': 3.0, 'price': 0.0
+        },
+        {'name': 'Los Angeles Zoo', 'location': '5333 Zoo Dr, Los Angeles, CA', 'date': '2025-06-15', 'description': 'An expansive zoo featuring a diverse range of animals and interactive exhibits; perfect for a relaxing and educational day.', 'start_time': '14: 00', 'end_time': '17: 00', 'duration_hours': 3.0, 'price': 24.0
+        },
+        {'name': 'Yosemite Falls Trailhead', 'location': 'Yosemite National Park', 'date': '2025-06-15', 'description': 'Begin your outdoor adventure with a hike to Yosemite Falls, one of the tallest waterfalls in North America. The trail is steep but offers incredible views.', 'start_time': '08: 00', 'end_time': '12: 00', 'duration_hours': 4.0, 'price': 0.0
+        },
+        {'name': 'Upper Yosemite Falls Trail', 'location': 'Yosemite National Park', 'date': '2025-06-16', 'description': 'This trail takes you to the top of Upper Yosemite Falls, providing breathtaking vistas. It is a challenging 7.6-mile round trip.', 'start_time': '08: 00', 'end_time': '12: 30', 'duration_hours': 4.5, 'price': 0.0
+        },
+        {'name': 'Glacier Point', 'location': 'Yosemite National Park', 'date': '2025-06-17', 'description': 'Visit Glacier Point for stunning panoramic views of the valley and the surrounding mountains. A short hike can also take you closer to the edge.', 'start_time': '09: 00', 'end_time': '12: 00', 'duration_hours': 3.0, 'price': 0.0
+        },
+        {'name': 'Bridalveil Falls', 'location': 'Yosemite National Park', 'date': '2025-06-17', 'description': 'A quick walk will take you to Bridalveil Falls, which is accessible and offers magnificent views. Great for photos!', 'start_time': '12: 30', 'end_time': '13: 30', 'duration_hours': 1.0, 'price': 0.0
+        },
+        {'name': 'Yosemite Valley Loop Trail', 'location': 'Yosemite National Park', 'date': '2025-06-18', 'description': 'Complete your adventure with the Yosemite Valley Loop Trail. It’s a moderate hike surrounded by stunning scenery and wildlife.', 'start_time': '08: 00', 'end_time': '12: 00', 'duration_hours': 4.0, 'price': 0.0
+        },
+        {'name': 'Balboa Park', 'location': 'San Diego, CA', 'date': '2025-06-18', 'description': 'Explore the cultural heart of San Diego, filled with gardens, museums, and historic buildings. Enjoy verbal strolls through scenic walking paths and stunning architecture.', 'start_time': '09: 00', 'end_time': '12: 00', 'duration_hours': 3.0, 'price': 0.0
+        },
+        {'name': 'Lunch at The Prado', 'location': 'Balboa Park,
+            1549 El Prado', 'date': '2025-06-18', 'description': 'Enjoy lunch at this upscale restaurant located in Balboa Park, offering Californian cuisine with an exceptional ambiance.', 'start_time': '12: 00', 'end_time': '13: 30', 'duration_hours': 1.5, 'price': 30.0
+        },
+        {'name': 'USS Midway Museum', 'location': '910 N Harbor Dr, San Diego, CA', 'date': '2025-06-18', 'description': 'Explore the historic USS Midway aircraft carrier museum, showcasing aircraft, exhibits, and experiences from the notable Navy ship.', 'start_time': '14: 00', 'end_time': '17: 00', 'duration_hours': 3.0, 'price': 25.0
+        },
+        {'name': 'Dinner at Point Loma Seafoods', 'location': '2805 Emerson St, San Diego, CA', 'date': '2025-06-18', 'description': 'Delight in a fresh seafood dinner overlooking the harbor at this local favorite.', 'start_time': '17: 30', 'end_time': '19: 00', 'duration_hours': 1.5, 'price': 40.0
+        },
+        {'name': 'Sunset Cliffs Natural Park', 'location': 'Ladera St, San Diego, CA', 'date': '2025-06-18', 'description': 'Enjoy a scenic walk along the cliffs where breathtaking views of the sunset cast an enchanting glow over the Pacific Ocean.', 'start_time': '19: 30', 'end_time': '20: 30', 'duration_hours': 1.0, 'price': 0.0
+        },
+        {'name': 'Old Town San Diego State Historic Park', 'location': 'San Diego Ave and Twiggs St, San Diego, CA', 'date': '2025-06-19', 'description': 'Explore the historic heart of San Diego, featuring museums, shops, and outdoor cafes set in beautiful gardens.', 'start_time': '09: 00', 'end_time': '12: 00', 'duration_hours': 3.0, 'price': 0.0
+        },
+        {'name': 'Lunch at Casa Guadalajara', 'location': '4125 Taylor St, San Diego, CA', 'date': '2025-06-19', 'description': 'Experience delicious regional Mexican dishes in a colorful atmosphere with live music.', 'start_time': '12: 00', 'end_time': '13: 30', 'duration_hours': 1.5, 'price': 25.0
+        },
+        {'name': 'Cabrillo National Monument', 'location': '1800 Cabrillo Memorial Dr, San Diego, CA', 'date': '2025-06-19', 'description': 'Visit this iconic landmark that offers spectacular views of the Pacific Ocean and detailed history about the explorer Juan Rodriguez Cabrillo.', 'start_time': '14: 00', 'end_time': '16: 30', 'duration_hours': 2.5, 'price': 20.0
+        },
+        {'name': 'Dinner at The Fish Market', 'location': '750 N Harbor Dr, San Diego, CA', 'date': '2025-06-19', 'description': 'Savor fresh local seafood dishes along with stunning views of the San Diego Bay.', 'start_time': '17: 00', 'end_time': '19: 00', 'duration_hours': 2.0, 'price': 50.0
+        },
+        {'name': 'Beach Day at La Jolla Shores', 'location': 'La Jolla, CA', 'date': '2025-06-20', 'description': 'Wind down your trip by soaking in the sun, swimming, or taking a stroll on this beautiful beach, perfect for beach activities and relaxation.', 'start_time': '09: 00', 'end_time': '12: 00', 'duration_hours': 3.0, 'price': 0.0
+        },
+        {'name': "Lunch at George's at the Cove", 'location': '1250 Prospect St, La Jolla, CA', 'date': '2025-06-20', 'description': 'Enjoy a meal with an ocean view at this award-winning restaurant known for its delicious menu and lovely atmosphere.', 'start_time': '12: 30', 'end_time': '14: 00', 'duration_hours': 1.5, 'price': 50.0
+        },
+        {'name': 'Kayaking in La Jolla Cove', 'location': 'La Jolla Cove', 'date': '2025-06-20', 'description': 'Experience the stunning beauty of La Jolla Cove in a kayak, exploring sea caves and observing the marine life.', 'start_time': '14: 30', 'end_time': '16: 30', 'duration_hours': 2.0, 'price': 60.0
+        }
+    ]
+}

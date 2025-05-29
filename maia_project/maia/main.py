@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 
 from maia.agents import MAIA
 from maia.interface import UserInterface, LLMInterface
-from maia.constraints import validate_constraints
 
 
 def setup_environment():
@@ -81,56 +80,85 @@ def process_request(ui: LLMInterface, maia_system: MAIA, user_request: str) -> D
     complete_request = ui.complete_missing_info_suggestions()
     print("Complete request:", complete_request)
     
-    # # Create constraints
-    # constraints = ui.create_constraints(complete_request)
-    
-    # # Validate constraints
-    # is_valid, validation_errors = validate_constraints(constraints)
-    # if not is_valid:
-    #     print("Warning: There are issues with your constraints:")
-    #     for error in validation_errors:
-    #         print(f"- {error}")
-        
-    #     # We'll continue anyway, but inform the user
-    #     print("\nI'll do my best to work with these constraints, but you may want to adjust them.")
-    
-    # # Update MAIA's constraints
-    # maia_system.update_constraints(constraints.dict())
-    
     # Define layers in order of processing
     layers = ["area", "city", "within_city"]
-    result = {}
+    result = {
+        "from_city": complete_request["from_city"],
+        "destination": complete_request["destination"],
+        "start_date": complete_request["start_date"],
+        "end_date": complete_request["end_date"],
+        "duration": complete_request["duration"],
+        "total_budget": complete_request["total_budget"]
+    }
     
     print("Creating your travel plan... This may take a few minutes.")
     
+    issue_analysis = {}
+    
     # Process each layer sequentially
     for layer in layers:
+        if layer == "area":
+            result["area_analysis"] = []
+        elif layer == "city":
+            result["city_selection"] = []
+            result["intercity_transit"] = []
+        elif layer == "within_city":
+            result["accommodation_search"] = []
+            result["activities_planning"] = []
+            result["restaurant_recommendations"] = []
+            result["local_transport"] = []
+        
+        
         print(f"Processing {layer} layer...")
         maia_system.activate_layer(layer)
-        # Pass the combined result from previous layers with complete_request
-        layer_result = maia_system.process_request(complete_request, result, layer)
         
-        # Verify the layer results
-        verification_result = maia_system.verify_plan(layer_result, complete_request)
-        print(f"Verification result for {layer} layer:", verification_result)
+        # Try up to two attempts for each layer
+        max_attempts = 3
+        current_attempt = 1
+        verification_passed = False
         
-        # If verification failed, return current layer results
-        if not verification_result.get("constraints_satisfied", False):
-            print(f"Verification failed for {layer} layer. Stopping processing.")
+        while current_attempt <= max_attempts and not verification_passed:
+            # Pass the combined result from previous layers with complete_request
+            layer_result = maia_system.process_request(complete_request, result, layer, issue_analysis)
             result.update(layer_result)
-            maia_system.deactivate_layer(layer)
-            return result
+            
+            # Verify the layer results
+            verification_result = maia_system.verify_plan(layer_result, complete_request)
+            print(f"Verification result for {layer} layer (attempt {current_attempt}):", verification_result)
+            
+            # Check if verification passed
+            if verification_result.get("constraints_satisfied", False):
+                verification_passed = True
+                issue_analysis = {}
+                break
+           
+            # Store issues from verification result if constraints not satisfied
+            detailed_analysis = verification_result["detailed_analysis"]
+            # Update issues dictionary with any constraint issues found
+            for constraint_type, analysis in detailed_analysis.items():
+                if isinstance(analysis, dict) and not analysis.get("satisfied", True) and analysis.get("issues"):
+                    issue_analysis[constraint_type] = analysis
+
+            # If verification failed and we still have attempts left, try again
+            if current_attempt < max_attempts:
+                print(f"Verification failed for {layer} layer. Trying again...")
+                current_attempt += 1
+            else:
+                print(f"Verification failed for {layer} layer after {max_attempts} attempts. Stopping processing.")
+                maia_system.deactivate_layer(layer)
+                return result
         
         # Update the overall result with new information from this layer
-        result.update(layer_result)
         maia_system.deactivate_layer(layer)
         print(f"Completed {layer} layer processing")
+        print(f"Current travel plan after {layer} layer: {result}")
     
-    print("Result:", result)
     
     # Final verification of the complete travel plan
     verification_result = maia_system.verify_plan(result, complete_request)
     print("Final verification result:", verification_result)
+    
+    print("Final result:", result)
     
     # # Format and save the travel plan
     # travel_plan_path = ui.save_travel_plan(result)

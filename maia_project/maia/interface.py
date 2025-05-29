@@ -7,18 +7,6 @@ import json
 import re
 import os
 from datetime import datetime
-
-from maia.constraints import (
-    TimeConstraint,
-    BudgetConstraint,
-    PreferenceConstraint,
-    Constraints,
-    parse_user_input_to_constraints,
-    validate_constraints
-)
-
-# Import for LLM-based interfaces
-import json
 from typing import Protocol, runtime_checkable
 
 @runtime_checkable
@@ -135,8 +123,8 @@ class LLMInterface(UserInterface):
         Please extract travel planning information from the following user request.
         Format your response as a JSON object with the following fields:
         
+        - from_city: Where the user is traveling from (if mentioned)
         - destination: The destination(s) the user wants to visit
-        - origin: Where the user is traveling from (if mentioned)
         - start_date: The start date of the trip (in YYYY-MM-DD format)
         - end_date: The end date of the trip (in YYYY-MM-DD format)
         - duration: The number of days of the trip
@@ -206,7 +194,7 @@ class LLMInterface(UserInterface):
         
         # Define all possible fields that could be in a complete travel request
         all_fields = [
-            "destination", "origin", "start_date", "end_date", "duration", 
+            "from_city", "destination", "start_date", "end_date", "duration", 
             "total_budget", "accommodation_types", "cuisine_preferences",
             "activity_preferences", "accessibility_requirements", "avoid_list",
             "must_see_list", "travel_pace", "transportation_preferences",
@@ -236,8 +224,8 @@ class LLMInterface(UserInterface):
         Consider any contextual clues in the provided information to make your suggestions as relevant as possible.
         
         For reference, here are all the fields that could be included in a complete travel request:
+        - from_city: Where the user is traveling from (if mentioned)
         - destination: The destination(s) the user wants to visit
-        - origin: Where the user is traveling from (if mentioned)
         - start_date: The start date of the trip (in YYYY-MM-DD format)
         - end_date: The end date of the trip (in YYYY-MM-DD format)
         - duration: The number of days of the trip
@@ -252,7 +240,6 @@ class LLMInterface(UserInterface):
         - transportation_preferences: Preferred modes of transportation
         - num_travelers: The number of people traveling
         - special_occasions: Any special occasions being celebrated
-        - language_requirements: Any language preferences or requirements
         - custom_constraints: Any other specific constraints or requirements
         
         Format your response as a JSON object with ONLY the missing fields and their suggested values.
@@ -430,161 +417,6 @@ class LLMInterface(UserInterface):
                 "The more details you provide, the better I can tailor your travel experience."
             )
     
-    
-    def extract_constraints_with_llm(self, parsed_request: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Extract detailed travel constraints using LLM.
-        
-        Args:
-            parsed_request: Dictionary containing the parsed request
-            
-        Returns:
-            Enhanced dictionary with detailed constraints
-        """
-        # Format a prompt that asks the LLM to extract detailed constraints
-        prompt = f"""
-        Based on the following travel request information:
-        {json.dumps(parsed_request, indent=2)}
-        
-        Please extract and infer detailed travel constraints and preferences.
-        Format your response as a JSON object with the following structure:
-        
-        {{
-          "time": {{
-            "start_date": "YYYY-MM-DD",
-            "end_date": "YYYY-MM-DD",
-            "min_days_per_city": number,
-            "max_days_per_city": number,
-            "earliest_departure_time": "HH:MM",
-            "latest_departure_time": "HH:MM",
-            "earliest_activity_time": "HH:MM",
-            "latest_activity_time": "HH:MM"
-          }},
-          "budget": {{
-            "total_budget": number,
-            "accommodation_budget_per_night": number,
-            "food_budget_per_day": number,
-            "activity_budget_per_day": number,
-            "transportation_budget": number,
-            "currency": "USD"
-          }},
-          "preferences": {{
-            "accommodation_types": [list of strings],
-            "cuisine_preferences": [list of strings],
-            "activity_preferences": [list of strings],
-            "accessibility_requirements": [list of strings],
-            "avoid_list": [list of strings],
-            "must_see_list": [list of strings],
-            "travel_pace": "relaxed/moderate/fast",
-            "rating_threshold": number
-          }},
-          "destination": "string",
-          "origin": "string",
-          "num_travelers": number,
-          "custom_constraints": {{ any additional constraints }}
-        }}
-        
-        Infer reasonable values for any fields not explicitly mentioned in the request,
-        based on the context and typical travel patterns. If information cannot be 
-        reasonably inferred, use null for numeric values and empty arrays for lists.
-        """
-        
-        # Get LLM response
-        response = self.llm.generate_response(prompt)
-        
-        # Parse the JSON response
-        try:
-            # Extract the JSON part from the response
-            json_start = response.find('{')
-            json_end = response.rfind('}') + 1
-            if json_start != -1 and json_end != -1:
-                json_str = response[json_start:json_end]
-                constraints_data = json.loads(json_str)
-                
-                # Return the enhanced constraints
-                return constraints_data
-            else:
-                # If we can't extract JSON, just return the original request
-                return parsed_request
-        except json.JSONDecodeError:
-            # If JSON parsing fails, return the original request
-            return parsed_request
-            
-    def create_constraints(self, parsed_request: Dict[str, Any]) -> Constraints:
-        """
-        Create a constraints object from the parsed request using LLM.
-        
-        Args:
-            parsed_request: Dictionary containing the parsed request
-            
-        Returns:
-            Constraints object
-        """
-        # First extract detailed constraints using LLM
-        enhanced_data = self.extract_constraints_with_llm(parsed_request)
-        
-        try:
-            # Create TimeConstraint
-            time_data = enhanced_data.get("time", {})
-            time_constraint = TimeConstraint(
-                start_date=time_data.get("start_date") or parsed_request.get("start_date", "2023-06-01"),
-                end_date=time_data.get("end_date") or parsed_request.get("end_date", "2023-06-10"),
-                min_days_per_city=time_data.get("min_days_per_city", 1),
-                max_days_per_city=time_data.get("max_days_per_city", 5),
-                earliest_departure_time=time_data.get("earliest_departure_time", "08:00"),
-                latest_departure_time=time_data.get("latest_departure_time", "21:00"),
-                earliest_activity_time=time_data.get("earliest_activity_time", "08:00"),
-                latest_activity_time=time_data.get("latest_activity_time", "22:00")
-            )
-            
-            # Create BudgetConstraint
-            budget_data = enhanced_data.get("budget", {})
-            budget_constraint = BudgetConstraint(
-                total_budget=budget_data.get("total_budget") or parsed_request.get("total_budget", 3000),
-                accommodation_budget_per_night=budget_data.get("accommodation_budget_per_night"),
-                food_budget_per_day=budget_data.get("food_budget_per_day"),
-                activity_budget_per_day=budget_data.get("activity_budget_per_day"),
-                transportation_budget=budget_data.get("transportation_budget"),
-                currency=budget_data.get("currency", "USD")
-            )
-            
-            # Create PreferenceConstraint
-            pref_data = enhanced_data.get("preferences", {})
-            preference_constraint = PreferenceConstraint(
-                accommodation_types=pref_data.get("accommodation_types", []),
-                cuisine_preferences=pref_data.get("cuisine_preferences", []),
-                activity_preferences=pref_data.get("activity_preferences", []),
-                accessibility_requirements=pref_data.get("accessibility_requirements", []),
-                avoid_list=pref_data.get("avoid_list", []),
-                must_see_list=pref_data.get("must_see_list", []),
-                travel_pace=pref_data.get("travel_pace", "moderate"),
-                rating_threshold=pref_data.get("rating_threshold", 4.0)
-            )
-            
-            # Create Constraints
-            constraints = Constraints(
-                time=time_constraint,
-                budget=budget_constraint,
-                preferences=preference_constraint,
-                destination=enhanced_data.get("destination") or parsed_request.get("destination", ""),
-                origin=enhanced_data.get("origin") or parsed_request.get("origin", ""),
-                num_travelers=enhanced_data.get("num_travelers") or parsed_request.get("num_travelers", 1),
-                custom_constraints=enhanced_data.get("custom_constraints", {})
-            )
-            
-            # Validate constraints
-            is_valid, validation_errors = validate_constraints(constraints)
-            if not is_valid:
-                print(f"Warning: Generated constraints have validation errors: {validation_errors}")
-            
-            self.constraints = constraints
-            return constraints
-            
-        except Exception as e:
-            # If something goes wrong, fall back to the original method
-            print(f"Error creating constraints with LLM: {e}")
-            return super().create_constraints(parsed_request)
-    
     def format_travel_plan(self, plan_data: Dict[str, Any]) -> str:
         """
         Format the travel plan data into a user-friendly display.
@@ -639,7 +471,7 @@ class LLMInterface(UserInterface):
             for transport in plan_data["transportation"]:
                 formatted_plan += (
                     f"### {transport.get('type', 'Transportation')} from "
-                    f"{transport.get('from', 'Origin')} to "
+                    f"{transport.get('from', 'from_city')} to "
                     f"{transport.get('to', 'Destination')}\n\n"
                     f"- Date: {transport.get('date', 'Not specified')}\n"
                     f"- Time: {transport.get('time', 'Not specified')}\n"
